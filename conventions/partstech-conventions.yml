@@ -1,0 +1,191 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  openapi/partstech-api-openapi.yml (info.description, components.securitySchemes, parameters,
+  responses) plus live unauthenticated probes of https://api.partstech.com on 2026-08-26
+api_style: REST-ish RPC over HTTPS
+media_type: application/json
+authentication:
+  primary: HTTP Bearer (JWT)
+  token_endpoint: POST /oauth/access
+  header: 'Authorization: Bearer <accessToken>'
+  actors:
+  - user
+  - partner
+  legacy: >-
+    apiKeyAuth — a `credentials` object embedded in the REQUEST BODY carrying {user:{id,key},
+    partner:{id,key}}. Marked deprecated in the spec and described as "used only in the methods that
+    were in the previous version". Note the securityScheme declares in: header / name: credentials while
+    the description documents it as a body field — the declaration and the prose disagree.
+  refresh: >-
+    POST /oauth/refresh exists but is marked deprecated; the spec instructs callers to "Generate a new
+    token after an expiration of previous instead of refreshing".
+  detail: authentication/partstech-authentication.yml
+  oauth2: false
+  scopes: false
+  scope_note: >-
+    There is no OAuth 2.0 authorization-code flow and no scope surface — access is coarse-grained
+    "user methods" vs "partner methods", plus per-shop EX permissions (GET/PATCH /shops/{shopId}/ex-permissions).
+    No scopes/ artifact is emitted.
+idempotency:
+  supported: false
+  header: null
+  scope: null
+  retention: null
+  evidence: >-
+    No Idempotency-Key header, no idempotency parameter, and no mention of the word "idempotent"
+    anywhere in the 413KB OpenAPI document. Cart and order operations (submitCart, submitItems,
+    addPartToCart, createQuote) are POSTs with no replay-protection contract, so a retried request after
+    a timeout may double-submit. No Idempotency pointer is emitted for this provider.
+pagination:
+  style: page-number
+  params:
+  - name: page
+    in: query
+    meaning: 1-based page index
+  - name: perPage
+    in: query
+    meaning: page size
+  response_signal: Link header
+  link_header:
+    rfc: RFC 8288
+    rels:
+    - first
+    - previous
+    - next
+    - last
+    example: '<https://api.partstech.com/purchases?page=1>; rel="first"'
+  coverage_note: >-
+    Only a minority of operations declare page/perPage parameters (2 declarations in the spec); the
+    docs describe pagination generically as applying to "API methods that support pagination" without
+    listing which ones, so an agent cannot tell from the contract which endpoints paginate.
+filtering_and_expansion:
+  sparse_fieldsets: false
+  field_expansion: false
+  metadata_fields: false
+request_tracing:
+  header: x-trace-id
+  direction: response
+  observed: true
+  example: 'x-trace-id: e5b3e99ea5a6ac532d761be7a89b6ca2'
+  documented: false
+  note: >-
+    Observed on live responses from api.partstech.com (Istio/Envoy gateway). Not documented in the
+    OpenAPI, so integrators are unlikely to log it — but it is the only correlation identifier the API
+    returns and is what support would need to trace a failed call.
+versioning:
+  scheme: document version only
+  current: 2.021.1
+  in_url: false
+  in_header: false
+  note: >-
+    info.version is 2.021.1 but no version appears in the path or in a required header — the base URL is
+    a bare https://api.partstech.com with unversioned resource paths (/catalog/search, /orders, ...).
+    There is no published mechanism for a client to pin a version, and no published policy on how
+    breaking changes are introduced.
+error_envelope:
+  shape: '{"error": {"code": "...", "message": "..."}}'
+  rfc9457: false
+  detail: errors/partstech-problem-types.yml
+rate_limit_signaling:
+  headers:
+  - x-rate-limit-limit
+  - x-rate-limit-remaining
+  - x-rate-limit-reset
+  exhaustion_status: 429
+  retry_after: false
+  detail: rate-limits/partstech-rate-limits.yml
+webhooks:
+  supported: true
+  style: partner-hosted callback URL supplied per session
+  detail: asyncapi/partstech-webhooks.yml
+domain_conventions:
+  taxonomy: >-
+    Parts and vehicles are addressed through Auto Care Association ACES/PIES-family reference data —
+    PCdb (categories, subcategories, part types, part-type attributes) under /taxonomy/* and VCdb
+    (years, makes, models, submodels, engines, vehicle ids) under /taxonomy/vehicles/*. The tags are
+    literally named `pcdb` and `vcdb`.
+  content_partners: >-
+    Labor, maintenance schedules, fluids and specifications content is MOTOR-powered; a second labor
+    surface is Mitchell 1-powered (/mitchell1/*).
+  compliance_link_header: >-
+    All MOTOR-powered endpoints return an RFC 8288 Link header pointing at MOTOR's OEM Compliance
+    Requirements page: Link: <https://www.motor.com/oem-compliance-requirements/>; rel="compliance".
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview/validate/simulate mode for cart submission or ordering. The closest surfaces are
+    checkCartAvailability and checkItemsAvailability, which verify supplier availability and pricing
+    before submitCart/submitItems — they are availability checks, not a dry run of the write itself,
+    but they are the only rehearsal an agent gets before placing a real order with a supplier.
+reversibility:
+  grade: documented
+  credit_basis: >-
+    Reversal operations exist and are named in the contract for cart composition and supplier
+    preferences, but NO time window or deadline is stated anywhere in the docs for any of them, and the
+    highest-consequence write — placing an order with a supplier — has no reversal operation at all.
+  surfaces:
+  - surface: Punchout / session cart composition
+    write_operations:
+    - addPartToCart
+    - updateCart
+    reversal_operation: removeItemsFromCart
+    reversal_path: POST /punchout/cart/remove-parts
+    window: null
+    window_source: null
+    grade: documented
+    note: >-
+      Parts can be removed from a cart while the session is open. No window is stated; in practice the
+      cart is bounded by the punchout session lifetime, which the docs do not quantify.
+  - surface: Supplier preferences
+    write_operations:
+    - addSupplierPreference
+    - updateSupplierPreference
+    reversal_operation: removeSupplierPreference
+    reversal_path: DELETE /profile/shop/suppliers/{supplierPreferenceId}
+    window: null
+    window_source: null
+    grade: documented
+  - surface: Order placement (parts and tires)
+    write_operations:
+    - submitCart
+    - submitItems
+    - createQuote
+    - createStockOrderQuote
+    reversal_operation: null
+    window: null
+    grade: none
+    note: >-
+      There is no cancel, void, return or refund operation anywhere in the 101-operation surface.
+      submitCart places real orders with real wholesale suppliers; once it returns, the API offers an
+      agent no programmatic way to take it back. Cancellation, if available at all, is a phone call to
+      the supplier. This is the single most important runtime fact about this API for an autonomous
+      agent and it is not stated in the docs — it is derived here from the absence of any reversal
+      operation in the contract.
+  - surface: Local inventory
+    write_operations:
+    - replaceLocalInventory
+    - updateLocalInventory
+    reversal_operation: null
+    window: null
+    grade: none
+    note: >-
+      POST /local-inventory is a full REPLACE of a supplier's local inventory. There is no snapshot,
+      no restore and no undo; the previous inventory set is gone once the call succeeds.
+  - surface: Shop and user profile
+    write_operations:
+    - updateProfile
+    - updateProfileShop
+    - updateShippingAddress
+    - updateBillingAddress
+    - updateShopExPermissions
+    reversal_operation: null
+    window: null
+    grade: none
+    note: PATCH overwrites; prior values are not retrievable through the API.
+cross_links:
+  errors: errors/partstech-problem-types.yml
+  lifecycle: lifecycle/partstech-lifecycle.yml
+  authentication: authentication/partstech-authentication.yml
+  rate_limits: rate-limits/partstech-rate-limits.yml
+  webhooks: asyncapi/partstech-webhooks.yml

@@ -1,0 +1,99 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  openapi/partstech-api-openapi.yml plus searches of partstech.com, api-docs.partstech.com and
+  status-page candidates on 2026-08-26
+versioning:
+  scheme: document-version-only
+  current_version: 2.021.1
+  in_path: false
+  in_header: false
+  media_type_versioning: false
+  policy_published: false
+  note: >-
+    info.version is 2.021.1, but nothing in the request carries a version — paths are unversioned under
+    a bare https://api.partstech.com. A client cannot pin a version, and PartsTech publishes no policy
+    describing how or when the contract changes.
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  deprecated_operations:
+  - operationId: refreshAccessToken
+    path: POST /oauth/refresh
+    tag: auth
+    replacement: >-
+      Generate a new token via POST /oauth/access after the previous one expires, per the bearerAuth
+      description.
+  - operationId: searchParts
+    path: POST /catalog/search
+    tag: search
+    replacement: not stated in the spec
+    note: >-
+      The primary parts search operation is marked deprecated with no named successor in the contract —
+      the single most consequential deprecation on this surface.
+  - operationId: getPartInterchanges
+    path: GET /catalog/parts/{partId}/interchanges
+    tag: parts
+    replacement: not stated in the spec
+  deprecated_security_scheme:
+    name: apiKeyAuth
+    note: >-
+      The body-embedded `credentials` object is described as "a deprecated way to get access to the
+      methods, used only in the methods that were in the previous version".
+  gap: >-
+    Three operations and one auth scheme are flagged deprecated:true in the spec, but there is no
+    sunset date, no Deprecation/Sunset response header, and no published deprecation policy. An agent
+    knows something is going away but not when, and for two of the three not what to use instead. No
+    Deprecation pointer is emitted, because a deprecated: true flag on an operation is not a published
+    policy.
+status_page:
+  published: false
+  probes:
+  - url: https://status.partstech.com/
+    status: 000
+    detail: TLS handshake failure — no HTTPS listener
+  - url: https://partstech.statuspage.io/
+    status: 200
+    detail: >-
+      Redirects to https://www.statuspage.io — the Atlassian "no such page" behaviour, not a PartsTech
+      status page. Recorded as a miss; no StatusPage pointer is emitted.
+sla:
+  published: false
+changelog:
+  published: false
+  note: >-
+    No dated changelog or release-notes page was found on partstech.com, api-docs.partstech.com or the
+    PartsTech help center. The only version signal is info.version in the OpenAPI. No ChangeLog pointer
+    is emitted and no changelog/ artifact is written.
+environments:
+- name: production
+  base_url: https://api.partstech.com
+- name: beta
+  base_url: https://api.beta.partstech.com
+docs_health:
+  finding: >-
+    https://api-docs.partstech.com/ — the documented API portal root — returns HTTP 200 serving a
+    "Page Not Found | PartsTech" template whose entire body is "Sorry, we couldn't find what you were
+    looking for. Please contact PartsTech-Partner-API@oeconnection.com." The rendered reference is gone;
+    only the raw contract at /openapi.yaml still resolves. Any human or agent following the portal link
+    lands on a soft 404 and would reasonably conclude the API is retired.
+  probes:
+  - url: https://api-docs.partstech.com/
+    status: 200
+    verdict: soft-404
+  - url: https://api-docs.partstech.com/openapi.yaml
+    status: 200
+    content_type: application/yaml
+    bytes: 413285
+    verdict: live OpenAPI 3.0.0
+ownership:
+  acquired_by: OEConnection (OEC)
+  announced: '2024-12-31'
+  closed: 2025
+  evidence: >-
+    partstech.com/about-partstech/ — "In 2025, OEC acquired PartsTech to complement its OE mechanical
+    parts sourcing platform, RepairLink." Footer reads "PartsTech, an OEC Company". The OpenAPI
+    info.x-logo points at PartsTech_OEC-compnay_logo.svg and the partner API contact address is
+    PartsTech-Partner-API@oeconnection.com.

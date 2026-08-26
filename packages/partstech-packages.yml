@@ -1,0 +1,68 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  Registry searches of npm (registry.npmjs.org/-/v1/search), PyPI, RubyGems, Packagist, crates.io,
+  Maven Central (search.maven.org) and NuGet (azuresearch-usnc.nuget.org) for "partstech", plus the
+  PartsTech External API reference at https://api-docs.partstech.com/openapi.yaml and the PartsTech
+  GitHub organization https://github.com/partstech
+summary:
+  official_count: 0
+  third_party_count: 2
+  note: >-
+    PartsTech publishes NO first-party client library on any public package registry. The GitHub
+    organization github.com/partstech exists (created 2020-03-16, name "PartsTech", email
+    info@partstech.com) but carries 0 public repositories. Integrators are expected to call the REST
+    API directly; the only client libraries found are third-party wrappers published by PartsTech
+    customers/integrators.
+registries_probed:
+- registry: npm
+  query: partstech
+  results: 0
+- registry: pypi
+  package: partstech
+  status: 404
+- registry: rubygems
+  package: partstech
+  status: 404
+- registry: packagist
+  query: partstech
+  results: 0
+  note: search returned only unrelated "partitech/*" packages
+- registry: crates.io
+  query: partstech
+  results: 0
+- registry: maven-central
+  query: partstech
+  results: 0
+- registry: nuget
+  query: partstech
+  results: 2
+packages:
+- language: csharp
+  registry: nuget
+  name: EllipticBit.PartsTech.Client
+  url: https://www.nuget.org/packages/EllipticBit.PartsTech.Client
+  install: dotnet add package EllipticBit.PartsTech.Client
+  official: false
+  publisher: EllipticBit LLC
+  project_url: https://ellipticbit.com/
+  version: 0.2.5
+  published: '2026-06-24'
+  total_downloads: 1952
+  note: >-
+    Third-party. Self-described as "Client library for the PartsTech API"; authored and published by
+    EllipticBit LLC, not by PartsTech or OEConnection. Still pre-1.0 after multiple years.
+- language: csharp
+  registry: nuget
+  name: SunAuto.PartsTech.Client
+  url: https://www.nuget.org/packages/SunAuto.PartsTech.Client
+  install: dotnet add package SunAuto.PartsTech.Client
+  official: false
+  publisher: SunAuto.PartsTech.Client
+  project_url: null
+  version: 1.0.0
+  published: '2026-02-03'
+  total_downloads: 125
+  note: >-
+    Third-party, no description ("Package Description" placeholder) and no project URL. Appears to be
+    an integrator's internal client published publicly. Not endorsed by PartsTech.

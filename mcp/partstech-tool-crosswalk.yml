@@ -1,0 +1,333 @@
+generated: '2026-08-26'
+method: derived
+source: mcp/partstech-mcp.yml (derived candidate tools) bound to openapi/partstech-api-openapi.yml operationIds
+note: 'PartsTech publishes no MCP server and no GraphQL endpoint, so this crosswalk binds the DERIVED
+  candidate tool set in mcp/partstech-mcp.yml to its backing REST operations. Every row is confidence:
+  high because each candidate tool was defined FROM an operationId in the contract — the binding is definitional,
+  not inferred. It exists to show which of the 101 REST operations an agent surface would and would not
+  cover, and to record that every tool would inherit a real inputSchema from its backing operation parameters/requestBody.'
+surfaces:
+  openapi:
+    file: openapi/partstech-api-openapi.yml
+    source: https://api-docs.partstech.com/openapi.yaml
+    operations: 99
+    gated: false
+  graphql:
+    endpoint: null
+    probe: https://api.partstech.com/graphql -> 404 MethodNotFound
+    gated: false
+    present: false
+  mcp:
+    url: null
+    present: false
+    gated: false
+    note: no server published
+crosswalk:
+- tool: decode_vin
+  category: vehicle
+  rest:
+  - decodeVin
+  binding: rest
+  confidence: high
+- tool: decode_plate
+  category: vehicle
+  rest:
+  - decodePlate
+  binding: rest
+  confidence: high
+- tool: list_vehicle_years
+  category: vehicle
+  rest:
+  - getYears
+  binding: rest
+  confidence: high
+- tool: list_vehicle_makes
+  category: vehicle
+  rest:
+  - getMakes
+  binding: rest
+  confidence: high
+- tool: list_vehicle_models
+  category: vehicle
+  rest:
+  - getModels
+  binding: rest
+  confidence: high
+- tool: list_vehicle_engines
+  category: vehicle
+  rest:
+  - getEngines
+  binding: rest
+  confidence: high
+- tool: get_vehicle
+  category: vehicle
+  rest:
+  - getVehicle
+  binding: rest
+  confidence: high
+- tool: search_part_types
+  category: taxonomy
+  rest:
+  - getPartTypes
+  binding: rest
+  confidence: high
+- tool: get_part_type_attributes
+  category: taxonomy
+  rest:
+  - getPartTypeAttributes
+  binding: rest
+  confidence: high
+- tool: search_brands
+  category: catalog
+  rest:
+  - getBrands
+  binding: rest
+  confidence: high
+- tool: search_parts
+  category: catalog
+  rest:
+  - searchParts
+  binding: rest
+  confidence: high
+  note: backing operation is marked deprecated in the contract
+- tool: get_part
+  category: catalog
+  rest:
+  - getPart
+  binding: rest
+  confidence: high
+- tool: validate_fitment
+  category: catalog
+  rest:
+  - validateFitmentForPart
+  binding: rest
+  confidence: high
+- tool: request_quote
+  category: quoting
+  rest:
+  - requestQuote
+  binding: rest
+  confidence: high
+- tool: line_card_search
+  category: quoting
+  rest:
+  - lineCardSearch
+  binding: rest
+  confidence: high
+- tool: list_tire_sizes
+  category: tires
+  rest:
+  - tiresSizesByVehicle
+  binding: rest
+  confidence: high
+- tool: list_suppliers
+  category: suppliers
+  rest:
+  - searchSuppliers
+  binding: rest
+  confidence: high
+- tool: list_supplier_preferences
+  category: suppliers
+  rest:
+  - getSupplierPreferences
+  binding: rest
+  confidence: high
+- tool: search_orders
+  category: orders
+  rest:
+  - getOrders
+  binding: rest
+  confidence: high
+- tool: get_order
+  category: orders
+  rest:
+  - getOrder
+  binding: rest
+  confidence: high
+- tool: get_labor
+  category: content
+  rest:
+  - getLabor
+  binding: rest
+  confidence: high
+- tool: get_maintenance_schedule
+  category: content
+  rest:
+  - maintenanceSchedulesIntervals
+  binding: rest
+  confidence: high
+- tool: get_fluids
+  category: content
+  rest:
+  - fluidsSummary
+  binding: rest
+  confidence: high
+- tool: create_cart
+  category: cart
+  rest:
+  - createCart
+  binding: rest
+  confidence: high
+- tool: add_part_to_cart
+  category: cart
+  rest:
+  - addPartToCart
+  binding: rest
+  confidence: high
+- tool: remove_parts_from_cart
+  category: cart
+  rest:
+  - removeItemsFromCart
+  binding: rest
+  confidence: high
+- tool: check_cart_availability
+  category: cart
+  rest:
+  - checkCartAvailability
+  binding: rest
+  confidence: high
+  note: The only rehearsal available before an irreversible submit.
+- tool: submit_cart
+  category: cart
+  rest:
+  - submitCart
+  binding: rest
+  confidence: high
+  note: Spends real money against the shop's wholesale supplier accounts. No cancel, void or refund operation
+    exists in this API. Any MCP server over this operation must gate it behind explicit human confirmation.
+mcp_only: []
+rest_only:
+- capability: auth
+  operations:
+  - getAcessToken
+  - refreshAccessToken
+- capability: auto-connect
+  operations:
+  - attemptAutoConnect
+  - connectionCallback
+- capability: brands
+  operations:
+  - getBrand
+- capability: custom-cart
+  operations:
+  - checkItemsAvailability
+  - customCartCreate
+  - submitItems
+- capability: ex-permissions
+  operations:
+  - GetShopExPermissions
+  - bathGetShopExPermissions
+  - getPartnerExProfile
+  - updateShopExPermissions
+- capability: jobs
+  operations:
+  - getJobs
+- capability: local-inventory
+  operations:
+  - localInventoryMappingReportDetails
+  - localInventoryMappingReportSummary
+  - localInventorySearch
+  - replaceLocalInventory
+  - updateLocalInventory
+- capability: mitchell1
+  operations:
+  - GetMitchell1VehicleId
+- capability: mitchell1-labor
+  operations:
+  - GetGroups
+  - GetProcedure
+  - GetProceduresSummary
+  - GetSubGroups
+  - SearchProceduresSummary
+- capability: motor-fluids
+  operations:
+  - fluidsDetails
+- capability: motor-labor
+  operations:
+  - getLaborDetails
+- capability: motor-maintenance-schedules
+  operations:
+  - maintenanceSchedulesDetails
+  - maintenanceSchedulesDetailsByIndicator
+  - maintenanceSchedulesDetailsByInterval
+  - maintenanceSchedulesIndicators
+- capability: motor-specifications
+  operations:
+  - contentSilos
+  - specificationsDetails
+  - specificationsSummary
+- capability: partner-orders
+  operations:
+  - getOrderByPartner
+  - getOrdersByPartner
+- capability: parts
+  operations:
+  - getPartInterchanges
+  - getPartWithRequestBody
+- capability: pcdb
+  operations:
+  - GetPartTaxonomyByCategoryId
+  - getCategories
+  - getPartType
+  - getSubcategories
+- capability: punchout-cart
+  operations:
+  - updateCart
+- capability: punchout-orders
+  operations:
+  - getPunchoutOrders
+- capability: punchout_quote
+  operations:
+  - createQuote
+  - createStockOrderQuote
+  - getQuoteInformation
+  - updateQuote
+- capability: session-cart
+  operations:
+  - getCart
+- capability: shop
+  operations:
+  - getProfileShop
+  - updateBillingAddress
+  - updateProfileShop
+  - updateShippingAddress
+- capability: shops
+  operations:
+  - getShopById
+  - searchShops
+- capability: supplier_preferences
+  operations:
+  - addSupplierPreference
+  - getTireSupplierPreferences
+  - removeSupplierPreference
+  - updateSupplierPreference
+- capability: suppliers
+  operations:
+  - getStore
+  - getSupplier
+  - searchStores
+- capability: tires
+  operations:
+  - tireSizes
+- capability: user
+  operations:
+  - profile
+  - resetPassword
+  - updateProfile
+- capability: users
+  operations:
+  - getUserByUsername
+  - registerUser
+  - searchUsers
+- capability: vcdb
+  operations:
+  - getSubmodels
+  - getVehicleByVin
+  - listVehicles
+coverage:
+  tools_named: 28
+  tools_bound: 28
+  mcp_only: 0
+  rest_ops_total: 99
+  rest_ops_with_tool: 28
+  rest_ops_without_tool: 71

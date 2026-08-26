@@ -1,0 +1,82 @@
+generated: '2026-08-26'
+method: searched
+source: https://partstech.com/pricing/
+plan_count: 3
+currency: USD
+billing_periods:
+- monthly
+- annual
+note: >-
+  These are the plans for the PartsTech shop platform (the web application and its shop-management-system
+  integrations). PartsTech publishes NO separate price list for the PartsTech External API: trade press
+  and PartsTech's own marketing describe the partner/parts-ordering API as free to integrate, and API
+  access is arranged directly with the partner team at PartsTech-Partner-API@oeconnection.com rather
+  than purchased from a public plan page. Annual billing is advertised as saving "up to 10%"; both the
+  annual and monthly price points below are quoted verbatim from the pricing page.
+plans:
+- name: PartsTech Free
+  price: 0
+  currency: USD
+  period: month
+  billing: annual-or-monthly
+  positioning: For growing shops
+  included:
+  - Unlimited users
+  - Access to unlimited parts suppliers
+  - Access to 30+ in-network tire suppliers
+  - Unlimited parts lookup & ordering
+  - Live wholesale pricing & inventory
+  - License plate & VIN lookups
+  - Access to full vehicle diagrams
+  - Popular jobs (front brakes only)
+  - Preferred brands (front brakes only)
+  - Direct integration with 35+ management systems
+  - Access to 15M+ products from 5K+ brands
+  limits:
+  - Popular jobs restricted to front brake repairs
+  - Preferred brands restricted to front brake brands
+  - Tire suppliers limited to the 30+ in-network set
+  overage: null
+- name: PartsTech Plus
+  price_annual: 45
+  price_monthly: 50
+  currency: USD
+  period: month
+  positioning: For shops looking to do more
+  included:
+  - Everything in PartsTech Free
+  - Access to full network of 50+ tire suppliers
+  - Tire comparison & mobile quoting
+  - Custom jobs (custom job templates)
+  - Popular jobs (all available common jobs)
+  - Retail pricing configuration
+  - Basic analytics with spend report
+  limits:
+  - No user permissions / team access controls
+  - No advanced analytics
+  overage: null
+- name: PartsTech Complete
+  price_annual: 85
+  price_monthly: 95
+  currency: USD
+  period: month
+  positioning: For shops looking to do the most
+  included:
+  - Everything in PartsTech Plus
+  - User permissions & team access
+  - Preferred brands across all part and tire brands
+  - Advanced analytics & insights
+  - Priority support
+  limits: []
+  overage: null
+signup:
+  url: https://app.partstech.com/sign-up
+  credit_card_required: false
+  note: Pricing page states "Free account. No credit card required."
+api_pricing:
+  published: false
+  contact: PartsTech-Partner-API@oeconnection.com
+  note: >-
+    No public price, quota or metered rate is published for the External API. Rate limits are published
+    in the OpenAPI description (see rate-limits/partstech-rate-limits.yml) but the commercial terms are
+    not.

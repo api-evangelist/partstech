@@ -1,18 +1,88 @@
 aid: partstech
 name: PartsTech
-description: 'PartsTech is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  PartsTech is a web-based automotive parts and tire procurement platform for repair shops, tire shops
+  and dealers, connecting more than 30,000 shops to 300+ aftermarket parts and tire suppliers across
+  30,000+ distribution locations through a single search, quote and ordering workflow. Founded by Greg
+  Kirber and Erik St. Pierre and acquired by OEConnection (OEC) in 2025, PartsTech pairs its shop-facing
+  web application with a partner-facing REST API — the PartsTech External API — used by 35+ shop
+  management systems (SMS), point-of-sale and estimating vendors to embed parts search, VIN and license
+  plate decoding, ACES/PCdb/VCdb taxonomy lookups, live wholesale pricing and availability, punchout
+  carts, quoting, tire search, MOTOR and Mitchell 1 labor/maintenance content, order history and local
+  inventory into their own software.
+image: https://partstech.com/wp-content/uploads/2024/04/partstech-fb-logo.jpg
 url: https://raw.githubusercontent.com/api-evangelist/partstech/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-26'
 modified: '2026-08-26'
 tags:
 - Company
-apis: []
+- Automotive
+- Auto Parts
+- Parts Procurement
+- Tires
+- E-Commerce
+- Ordering
+- Catalog
+- Vehicle Data
+- VIN Decoding
+- Shop Management
+- Punchout
+- Marketplace
+- Supply Chain
+apis:
+- name: PartsTech External API
+  description: >-
+    Partner-facing REST API for the PartsTech parts and tire ordering platform. Covers authentication
+    (JWT bearer via /oauth/access), parts search and part detail, brands, ACES/PCdb/VCdb taxonomy
+    (categories, part types, attributes, years/makes/models/submodels/engines), VIN and license plate
+    decoding, quoting and line-card search, punchout and session carts, custom carts, order and partner
+    order history, user/shop profile and supplier preferences, tire sizes and tire quoting, local
+    inventory upload and search, EX permissions, easy registration / auto-connect, and MOTOR- and
+    Mitchell 1-powered labor, maintenance schedules, fluids and specifications content. 101 operations
+    across 93 paths and 136 component schemas.
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - Automotive
+  - Auto Parts
+  - Parts Procurement
+  - Tires
+  - Catalog
+  - Vehicle Data
+  - VIN Decoding
+  - Ordering
+  - Punchout
+  - E-Commerce
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-api-openapi.yml
+  - type: Overlay
+    url: overlays/partstech-api-overlay.yaml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: MCPServer
+    url: mcp/partstech-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+  - type: AgentSkill
+    url: skills/_index.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +90,45 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://forgeglobal.com/partstech_stock/
+  url: https://partstech.com/
+- type: Documentation
+  url: https://api-docs.partstech.com/openapi.yaml
+- type: APIReference
+  url: https://api-docs.partstech.com/openapi.yaml
+- type: Support
+  url: https://partstech.com/support/
+- type: HelpCenter
+  url: https://partstech.my.site.com/help/s/
+- type: GettingStarted
+  url: https://partstech.my.site.com/help/s/article/Getting-Started-With-Partstech
+- type: Blog
+  url: https://partstech.com/resource/blog/
+- type: GitHubOrganization
+  url: https://github.com/partstech
+- type: Pricing
+  url: https://partstech.com/pricing/
+- type: SignUp
+  url: https://app.partstech.com/sign-up
+- type: Login
+  url: https://app.partstech.com/login
+- type: TermsOfService
+  url: https://partstech.com/terms-of-service/
+- type: PrivacyPolicy
+  url: https://partstech.com/privacy-policy/
+- type: Plans
+  url: plans/partstech-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/partstech-rate-limits.yml
+- type: Packages
+  url: packages/partstech-packages.yml
+- type: LLMsTxt
+  url: llms/partstech-llms.txt
+- type: DomainSecurity
+  url: security/partstech-domain-security.yml
+- type: Sandbox
+  url: sandbox/partstech-sandbox.yml
+x-enrichment:
+  date: '2026-08-26'
+  status: enriched
+  artifacts_added: 24
+  pass: local-v1

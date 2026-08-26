@@ -1,0 +1,53 @@
+generated: '2026-08-26'
+method: searched
+source: https://api-docs.partstech.com/openapi.yaml
+summary: >-
+  PartsTech publishes a named non-production environment in the OpenAPI servers[] block and the API has
+  an explicit "test mode" concept surfaced through an error code, but it does NOT publish test
+  credentials, test part numbers, test cards, fixtures or triggers. Access to the beta environment and
+  to test-mode users is arranged with the partner team.
+environments:
+- name: Production server
+  base_url: https://api.partstech.com
+  source: openapi servers[0]
+  verified: probed
+  probe:
+    url: https://api.partstech.com/catalog/brands
+    status: 401
+    body: '{"error":{"code":"InvalidToken","message":"Bearer token was not provided"}}'
+    upstream: partnerapi.prod-env.svc.cluster.local
+- name: Beta server
+  base_url: https://api.beta.partstech.com
+  source: openapi servers[1]
+  verified: probed
+  probe:
+    url: https://api.beta.partstech.com/catalog/brands
+    status: 401
+    upstream: partnerapi.beta-env.svc.cluster.local
+  note: >-
+    Confirmed to be a genuinely separate deployment, not a DNS alias — the Envoy
+    x-envoy-decorator-operation header names partnerapi.beta-env.svc.cluster.local where production
+    names partnerapi.prod-env.svc.cluster.local.
+test_mode:
+  documented: true
+  mechanism: >-
+    A user account is either a test-mode user or a live user. Calling with the wrong kind returns HTTP
+    403 with error code IncorrectMode and message "Incorrect user for test mode".
+  error_code: IncorrectMode
+  source: openapi components.responses examples (IncorrectMode)
+  key_prefixes: null
+  note: >-
+    The mode lives on the PartsTech user, not on a key prefix — there is no sk_test_/sk_live_-style
+    discriminator an agent can inspect before calling.
+test_data:
+  test_credentials_published: false
+  test_cards_published: false
+  fixtures_published: false
+  triggers_published: false
+  time_simulation: false
+  note: >-
+    No test values are published anywhere in the OpenAPI or on the public docs surface. Nothing was
+    invented for this artifact.
+access:
+  contact: PartsTech-Partner-API@oeconnection.com
+  self_serve: false

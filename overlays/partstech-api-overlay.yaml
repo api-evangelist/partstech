@@ -1,0 +1,77 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the PartsTech External API
+  version: 1.0.0
+x-generated: '2026-08-26'
+x-method: generated
+x-source: >-
+  Derived from openapi/partstech-api-openapi.yml (harvested verbatim from
+  https://api-docs.partstech.com/openapi.yaml on 2026-08-26) plus the artifacts in this repo. This
+  overlay is additive metadata only; it never rewrites PartsTech's contract.
+extends: openapi/partstech-api-openapi.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist-profile: https://apis.io/provider/partstech/
+    x-apievangelist-harvested: '2026-08-26'
+    x-apievangelist-source: https://api-docs.partstech.com/openapi.yaml
+    x-provider-owner: OEConnection (OEC)
+    x-contact-partner-api: PartsTech-Partner-API@oeconnection.com
+- target: $.info
+  update:
+    x-apievangelist-error-catalog: errors/partstech-problem-types.yml
+    x-apievangelist-conventions: conventions/partstech-conventions.yml
+    x-apievangelist-data-model: data-model/partstech-data-model.yml
+    x-apievangelist-webhooks: asyncapi/partstech-webhooks.yml
+    x-apievangelist-rate-limits: rate-limits/partstech-rate-limits.yml
+- target: $.info
+  update:
+    x-apievangelist-idempotency: >-
+      Not supported. No Idempotency-Key header and no replay protection on POST /punchout/cart/submit,
+      /punchout/cart/custom/order or /punchout/quote/create. A retried submit after a network timeout
+      may place a duplicate wholesale order.
+    x-apievangelist-reversibility: >-
+      No cancel, void, return or refund operation exists anywhere in this contract. Cart composition is
+      reversible via /punchout/cart/remove-parts; order placement is not reversible through the API.
+- target: $.info
+  update:
+    x-apievangelist-domain-standards:
+    - Auto Care Association VCdb (vehicle configuration) — /taxonomy/vehicles/*
+    - Auto Care Association PCdb (product classification) — /taxonomy/categories, /taxonomy/part-types
+    - AAIA brand identifiers — LocalInventoryItem.brandAAIAId
+    - ISO 3779 VIN — /catalog/vin/{vin}
+    - RFC 8288 Web Linking — pagination Link rels and MOTOR rel="compliance"
+- target: $.paths['/punchout/cart/submit'].post
+  update:
+    x-apievangelist-consequence: high
+    x-apievangelist-note: >-
+      Places real orders with real wholesale suppliers against the shop's supplier accounts. There is no
+      reversal operation. Call POST /punchout/cart/availability first — it is the only rehearsal this
+      API offers.
+- target: $.paths['/punchout/cart/custom/order'].post
+  update:
+    x-apievangelist-consequence: high
+    x-apievangelist-note: >-
+      Same irreversibility as submitCart. Pair with POST /punchout/cart/custom/availability.
+- target: $.paths['/local-inventory'].post
+  update:
+    x-apievangelist-consequence: high
+    x-apievangelist-note: >-
+      Full REPLACE of a supplier's local inventory. No snapshot, no restore, no undo. Use PUT
+      /local-inventory for an incremental update instead when the intent is not a wholesale replacement.
+- target: $.paths['/catalog/search'].post
+  update:
+    x-apievangelist-note: >-
+      Marked deprecated:true in the contract with no named successor. This is the primary parts-search
+      operation; integrators should confirm the replacement with PartsTech-Partner-API@oeconnection.com
+      before building on it.
+- target: $.paths['/oauth/refresh'].post
+  update:
+    x-apievangelist-note: >-
+      Deprecated. Generate a new token via POST /oauth/access after expiry instead of refreshing.
+- target: $.paths['/our-auto-connect-callback'].post
+  update:
+    x-apievangelist-consequence: high
+    x-apievangelist-note: >-
+      This callback delivers a shop's PartsTech Username and API Key to the partner endpoint. Treat the
+      receiving URL as a secret sink: TLS only, no logging of the body, no third-party proxies.

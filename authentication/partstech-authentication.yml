@@ -1,0 +1,32 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/partstech-api-openapi.yml
+summary:
+  types:
+  - apiKey
+  - http
+  api_key_in:
+  - header
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+  description: "Get access to data while protecting your account credentials.\nToken (a JWT\
+    \ token) are also a safer and more secure way to give you access.\n\nIt provides two ways\
+    \ of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess\
+    \ to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication\
+    \ and Access\"](#operation/getAcessToken).\n2. Add a header in the "
+  sources:
+  - openapi/partstech-api-openapi.yml
+- name: apiKeyAuth
+  type: apiKey
+  in: header
+  parameter: credentials
+  description: "It is a deprecated way to get access to the methods, used only in the methods,\
+    \ that were in the previous version.\n\nIt provides two ways of an access:\n - `user` -\
+    \ Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use\
+    \ this way you need to add credentials in the request body, where it is allowed, in a next\
+    \ format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n  "
+  sources:
+  - openapi/partstech-api-openapi.yml

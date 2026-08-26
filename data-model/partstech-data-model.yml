@@ -1,0 +1,218 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/partstech-api-openapi.yml ($ref graph + id-reference fields across 136 component schemas)
+summary: >-
+  The PartsTech domain has four cores that meet in the cart: a VEHICLE core (VCdb — year/make/model/
+  submodel/engine resolving to a vehicleId, also reachable by VIN or license plate), a PRODUCT core
+  (PCdb taxonomy -> part type -> part -> brand, with Auto Care/AAIA brand ids), a SUPPLY core
+  (supplier -> store -> live price and availability, plus a shop's supplier preferences and a supplier's
+  local inventory), and a TRANSACTION core (punchout session -> cart -> quote or order -> purchased
+  parts). A shop and its users sit across all four.
+id_conventions:
+  style: opaque integer/string ids, no prefixes
+  note: >-
+    PartsTech uses no typed id prefixes (nothing like ord_ / part_). Ids are bare and their meaning is
+    carried only by the field name, so an agent must track which id space a value came from —
+    partId, vehicleId, brandID, categoryId, partTypeId, supplierId, storeId, sellerId, shopId,
+    sessionId, orderId and applicationId are all distinct spaces with no self-describing form.
+  external_id_spaces:
+  - name: VCdb vehicleId / yearId / makeId / modelId / subModelId / engineId / baseVehicleId
+    authority: Auto Care Association Vehicle Configuration Database
+  - name: PCdb categoryId / subCategoryId / partTypeId
+    authority: Auto Care Association Product Classification Database
+  - name: brandAAIAId
+    authority: AAIA / Auto Care Association brand identifier
+    seen_in: LocalInventoryItem
+  - name: VIN
+    authority: ISO 3779
+  - name: MOTOR applicationId / operationId (taxonomyId)
+    authority: MOTOR Information Systems
+entities:
+- name: Vehicle
+  schema: ResponseVehicle
+  key: vehicleId
+  fields: [baseVehicleId, yearId, makeId, makeName, modelId, modelName, subModelId, subModelName, engineId, engineName, vehicleName, region, deprecated]
+  operations: [listVehicles, getVehicle, getVehicleByVin, getYears, getMakes, getModels, getSubmodels, getEngines, decodeVin, decodePlate]
+- name: Taxonomy
+  schema: ResponseTaxonomy
+  key: partTypeId
+  fields: [partTypeId, partTypeName, partTypeDescription, categoryId, categoryName, subCategoryId, subCategoryName]
+  operations: [getCategories, getSubcategories, getPartTypes, getPartType, getPartTypeAttributes, GetPartTaxonomyByCategoryId]
+- name: Brand
+  schema: Brand
+  key: id
+  fields: [brandID, brandName, id, displayName, lineCode]
+  operations: [getBrands, getBrand]
+- name: Part
+  schema: CatalogPart
+  key: partId
+  fields: [partId, partNumber, partName, brand, images, partsTechCatalogURL, taxonomy, partCategory, vehicleId, attributes, variations, rewards]
+  operations: [searchParts, getPart, getPartWithRequestBody, getPartInterchanges, validateFitmentForPart]
+- name: Supplier
+  schema: BriefSupplier
+  key: id
+  operations: [searchSuppliers, getSupplier]
+- name: Store
+  schema: BriefStore
+  key: id
+  operations: [searchStores, getStore]
+- name: Shop
+  schema: BriefShop
+  key: id
+  fields: [id, name, phone, cellphone, demo]
+  operations: [searchShops, getShopById, getProfileShop, updateProfileShop]
+- name: User
+  schema: User
+  key: username
+  fields: [username, email, enabled, lastLogin, registrationDate, firstName, lastName, timeZone, demo]
+  operations: [profile, updateProfile, searchUsers, registerUser, getUserByUsername]
+- name: SupplierPreference
+  key: supplierPreferenceId
+  operations: [getSupplierPreferences, addSupplierPreference, updateSupplierPreference, removeSupplierPreference, getTireSupplierPreferences]
+- name: ExPermission
+  schema: ExPermission
+  key: id
+  operations: [GetShopExPermissions, updateShopExPermissions, bathGetShopExPermissions, getPartnerExProfile]
+- name: PunchoutSession
+  key: sessionId
+  operations: [createCart, customCartCreate, getCart, updateCart, checkCartAvailability, submitCart, getPunchoutOrders]
+- name: PunchoutOrder
+  schema: PunchoutOrder
+  key: (none — quote form)
+  fields: [supplier, store, delivery, buyerShop, tax, totalPrice, totalDiscount, coreCharge, fet, shippingPrice, paymentType, parts, poNumber, notes]
+- name: Order
+  schema: Order
+  key: id
+  fields: [id, supplier, store, shippingAddress, delivery, tax, totalPrice, totalDiscount, coreCharge, fet, shippingPrice, paymentType, poNumber, invoiceNumbers, notes, orderUrl, paymentDate, status, rewards, parts]
+  operations: [getOrders, getOrder, getOrdersByPartner, getOrderByPartner]
+- name: PurchasedPart
+  schema: PurchasedPart
+  key: partId
+  fields: [partId, lineCardId, partNumber, partName, quantity, quantityDelivered, price, deliveryStatus, vehicleId, brand, taxonomy, partCategory, bundled]
+- name: LocalInventoryItem
+  schema: LocalInventoryItem
+  key: inventoryUID
+  fields: [inventoryUID, partNumber, brandAAIAId, brandUID, brandName, lineCode, partDescription, supplierId, supplierUID, supplierName, categoryUID, categoryName, onHand, partPrice, partCost]
+  operations: [replaceLocalInventory, updateLocalInventory, localInventorySearch, localInventoryMappingReportSummary, localInventoryMappingReportDetails]
+- name: LaborOperation
+  schema: Operation
+  key: id
+  fields: [id, taxonomyId, name, partTerminologies, laborTimeInterval, additional, all, base, attributes, position]
+  operations: [getLabor, getLaborDetails, getJobs]
+  provider: MOTOR
+- name: Mitchell1Vehicle
+  schema: M1Vehicle
+  key: id
+  operations: [GetMitchell1VehicleId, GetGroups, GetSubGroups, GetProceduresSummary, SearchProceduresSummary, GetProcedure]
+  provider: Mitchell 1
+relationships:
+- from: Part
+  to: Brand
+  type: has_one
+  via: brand ($ref Brand)
+- from: Part
+  to: Taxonomy
+  type: has_one
+  via: taxonomy ($ref ResponseTaxonomy)
+- from: Part
+  to: Vehicle
+  type: belongs_to
+  via: vehicleId
+  note: Fitment — a catalog part is returned in the context of the vehicle it fits.
+- from: Taxonomy
+  to: Taxonomy
+  type: has_many
+  via: categoryId -> subCategoryId -> partTypeId
+  note: Three-level PCdb hierarchy expressed as fields on one flat schema, not nested resources.
+- from: Vehicle
+  to: Vehicle
+  type: has_many
+  via: yearId -> makeId -> modelId -> subModelId -> engineId -> vehicleId
+  note: VCdb drill-down; each level is its own operation.
+- from: Order
+  to: Supplier
+  type: has_one
+  via: supplier ($ref BriefSupplier)
+- from: Order
+  to: Store
+  type: has_one
+  via: store ($ref PaidOrderStore -> sellerId)
+- from: Order
+  to: PurchasedPart
+  type: has_many
+  via: parts
+- from: Order
+  to: Address
+  type: has_one
+  via: shippingAddress ($ref Address)
+- from: PurchasedPart
+  to: Brand
+  type: has_one
+  via: brand
+- from: PurchasedPart
+  to: Taxonomy
+  type: has_one
+  via: taxonomy
+- from: PurchasedPart
+  to: Vehicle
+  type: belongs_to
+  via: vehicleId
+- from: PunchoutOrder
+  to: PunchoutOrderPart
+  type: has_many
+  via: parts
+- from: PunchoutOrder
+  to: Shop
+  type: belongs_to
+  via: buyerShop
+- from: PunchoutPurchasedOrder
+  to: PunchoutOrder
+  type: extends
+  via: allOf $ref PunchoutOrder + id
+  note: A purchased order is a punchout order plus a PartsTech-generated id.
+- from: PunchoutSession
+  to: PunchoutOrder
+  type: has_many
+  via: orders
+- from: Shop
+  to: User
+  type: has_many
+  via: shop membership (searchUsers scoped by shop)
+- from: Shop
+  to: SupplierPreference
+  type: has_many
+  via: /profile/shop/suppliers
+- from: SupplierPreference
+  to: Supplier
+  type: has_one
+  via: supplier
+- from: SupplierPreference
+  to: Store
+  type: has_one
+  via: store
+- from: Shop
+  to: ExPermission
+  type: has_many
+  via: /shops/{shopId}/ex-permissions
+- from: LocalInventoryItem
+  to: Supplier
+  type: belongs_to
+  via: supplierId / supplierUID
+- from: LocalInventoryPart
+  to: Vehicle
+  type: belongs_to
+  via: vehicleId
+- from: LaborOperation
+  to: Vehicle
+  type: belongs_to
+  via: vehicle params in request body
+- from: LaborOperation
+  to: Taxonomy
+  type: has_one
+  via: taxonomyId / partTerminologies
+counts:
+  schemas: 136
+  entities_modelled: 18
+  relationships: 25
+  operations: 101
+render: null

@@ -1,0 +1,207 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  openapi/partstech-api-openapi.yml (info.description "# Errors" / "# Error Responses" table,
+  components.schemas.Error, components.responses examples) plus live unauthenticated probes of
+  https://api.partstech.com on 2026-08-26
+format: vendor-json
+rfc9457: false
+envelope:
+  shape: '{"error": {"code": "<string>", "message": "<string>"}}'
+  content_type: application/json
+  schema: '#/components/schemas/Error'
+  required:
+  - code
+  - message
+  note: >-
+    PartsTech does NOT use RFC 9457 / application/problem+json. Every error is a plain application/json
+    body wrapping a single `error` object with a machine-readable `code` and a human `message`. Several
+    error variants extend the envelope with sibling fields (errorDetails, sessionId, redirectUrl) rather
+    than RFC 9457 extension members.
+extended_envelopes:
+- schema: OrderAvailabilityError
+  adds:
+  - errorDetails
+  meaning: Some orders are not available for purchasing; errorDetails names the supplier/store/parts.
+- schema: OrderNotPlacedError
+  adds:
+  - sessionId
+  - redirectUrl
+  meaning: Order cannot be placed without going through the cart (credit-card transaction required).
+- schema: RequiredAdditionalParametersError
+  adds:
+  - sessionId
+  - redirectUrl
+  meaning: Supplier requires additional parameters that must be filled in the cart.
+- schema: CartPartNotFoundError
+  adds: []
+- schema: CartPartNotFoundWithOrdersError
+  adds: []
+- schema: LockedSessionError
+  adds: []
+- schema: InvalidRequestError
+  adds: []
+- schema: IntegrationError
+  adds: []
+- schema: EmptyCartError
+  adds: []
+status_codes:
+- status: 400
+  title: Bad Request
+  description: The request was unacceptable.
+  content_type: application/json
+  codes:
+  - InvalidRequestSyntax
+  operations_declaring: 29
+- status: 401
+  title: Unauthorized
+  description: >-
+    The request requires user or partner credentials or a bearer token. Also returned for invalid
+    credentials or an invalid bearer token.
+  content_type: application/json
+  codes:
+  - InvalidToken
+  - UserAuthenticationFailed
+  - PartnerAuthenticationFailed
+  operations_declaring: 2
+  observed:
+    url: https://api.partstech.com/catalog/brands
+    body: '{"error":{"code":"InvalidToken","message":"Bearer token was not provided"}}'
+- status: 402
+  title: Request Failed
+  description: The parameters were valid but the request failed.
+  content_type: application/json
+  codes: []
+  note: Codes vary by method.
+  operations_declaring: 4
+- status: 403
+  title: Forbidden
+  description: >-
+    Also used for unauthorized requests such as improper credential scopes or permission issues.
+  content_type: application/json
+  codes:
+  - IncorrectMode
+  - DisabledApiUsage
+  - UserIsNotActivated
+  - HaveNotPermission
+  - NotAvailableMethod
+  operations_declaring: 4
+- status: 404
+  title: Not Found
+  description: Some data in the request is not found, or an incorrect URL was used.
+  content_type: application/json, text/html, or no content
+  codes:
+  - NotFound
+  operations_declaring: 20
+- status: 405
+  title: Method Not Allowed
+  content_type: application/json, text/html, or no content
+  codes: []
+  operations_declaring: 0
+- status: 406
+  title: Not Acceptable
+  description: >-
+    Client sent an Accept header for a content type which does not exist on the server.
+  content_type: no content
+  codes: []
+  operations_declaring: 1
+- status: 409
+  title: Locked
+  description: Another operation in progress blocks this method call.
+  content_type: application/json
+  codes:
+  - LockedSession
+  operations_declaring: 8
+- status: 429
+  title: Too Many Requests
+  content_type: application/json
+  codes:
+  - TooManyRequests
+  operations_declaring: 0
+  note: >-
+    Documented in the rate-limiting section but not declared as a response on any individual operation
+    in the spec — an agent reading only the paths would never see it.
+- status: 432
+  title: Integration Error
+  description: Non-standard status code used for supplier/integration failures.
+  content_type: application/json
+  codes: []
+  operations_declaring: 5
+  note: >-
+    432 is not an IANA-registered HTTP status code. Generic HTTP clients and many agent frameworks will
+    treat it as an unknown 4xx; integrators must special-case it.
+- status: 500
+  title: Internal Server Error
+  content_type: application/json
+  codes:
+  - InternalError
+  operations_declaring: 1
+- status: 501
+  title: Not Implemented
+  content_type: application/json
+  codes:
+  - MethodNotImplemented
+  operations_declaring: 0
+- status: 503
+  title: Service Unavailable
+  description: The backend server is not available.
+  content_type: no content
+  codes: []
+  operations_declaring: 1
+named_error_codes:
+- code: InvalidRequestSyntax
+  status: 400
+- code: InvalidToken
+  status: 401
+  message: Bearer token was not provided
+- code: UserAuthenticationFailed
+  status: 401
+- code: PartnerAuthenticationFailed
+  status: 401
+  message: Incorrect partner id or partner key
+- code: IncorrectMode
+  status: 403
+  message: Incorrect user for test mode
+  remediation: Use a test-mode user against the beta environment and a live user against production.
+- code: DisabledApiUsage
+  status: 403
+  message: User did not approve api usage or disable it
+  remediation: The shop user must approve API usage on their PartsTech account.
+- code: UserIsNotActivated
+  status: 403
+  message: >-
+    User is not activated. Please verify your email by clicking a link in the email from PartsTech that
+    was sent to you.
+  remediation: The shop user must verify their email address.
+- code: HaveNotPermission
+  status: 403
+  message: Invalid credentials were provided
+- code: NotAvailableMethod
+  status: 403
+  message: Method is not available
+- code: NotFound
+  status: 404
+- code: LockedSession
+  status: 409
+  remediation: Wait for the in-flight cart/session operation to finish and retry.
+- code: TooManyRequests
+  status: 429
+  remediation: Back off until the x-rate-limit-reset epoch-seconds timestamp.
+- code: MethodNotFound
+  status: 404
+  observed: true
+  note: >-
+    Observed live on unrouted paths (e.g. /.well-known/*) but not documented in the spec:
+    {"error":{"code":"MethodNotFound","message":"No route found for ..."}}
+- code: InternalError
+  status: 500
+- code: MethodNotImplemented
+  status: 501
+coverage:
+  documented_status_codes: 13
+  named_codes: 15
+  operations_with_4xx_or_5xx: 34
+  operations_total: 101
+  gap: >-
+    67 of 101 operations declare only a 200/204 response and no error response at all, so an agent
+    generating a client from the spec alone gets no typed error handling for two thirds of the surface.

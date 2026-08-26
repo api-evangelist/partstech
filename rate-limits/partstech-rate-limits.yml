@@ -1,0 +1,62 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://api-docs.partstech.com/openapi.yaml (info.description, "# Rate Limiting" section), plus live
+  unauthenticated probes of https://api.partstech.com/oauth/access and
+  https://api.partstech.com/catalog/brands on 2026-08-26
+limit_count: 4
+scope_note: >-
+  PartsTech applies rate limits at three scopes simultaneously — per user request, per private partner
+  request, and across all requests made with a partner's credentials — and states that "every method
+  has own separate sets of the limits". The numeric ceilings themselves are NOT published; only the
+  window types and the response headers are documented, so an integrator learns their actual ceiling
+  only from the x-rate-limit-limit header at runtime.
+limits:
+- id: per-day
+  scope: per-user / per-partner / per-partner-credentials
+  window: 1 day
+  limit: null
+  note: Restricts the count of requests made in one day. Numeric ceiling not published.
+- id: requests-per-second
+  scope: per-user / per-partner / per-partner-credentials
+  window: 1 second
+  limit: null
+  note: Restricts the count of requests made in one second. Numeric ceiling not published.
+- id: concurrent-requests
+  scope: per-user / per-partner / per-partner-credentials
+  window: concurrent
+  limit: null
+  note: Restricts the count of parallel in-flight requests. Numeric ceiling not published.
+- id: sliding-15-minutes
+  scope: per-user / per-partner / per-partner-credentials
+  window: 15 minutes (sliding)
+  limit: null
+  note: Restricts the count of requests made in the last 15 minutes. Numeric ceiling not published.
+headers:
+- name: x-rate-limit-limit
+  meaning: The rate limit ceiling for the endpoint that was just called.
+  example: 'x-rate-limit-limit: 1000'
+- name: x-rate-limit-remaining
+  meaning: Number of requests left in the current window.
+  example: 'x-rate-limit-remaining: 570'
+- name: x-rate-limit-reset
+  meaning: When the current window resets, as a UTC epoch-seconds timestamp.
+  example: 'x-rate-limit-reset: 1552003200'
+header_note: >-
+  The docs state the headers are returned "only for one general limit or for limit that user reached" —
+  i.e. exactly one limit is reflected per response, not one header set per window type. Live
+  unauthenticated 401 responses on 2026-08-26 carried no x-rate-limit-* headers, so the signal is not
+  observable before authentication.
+exhaustion:
+  status: 429
+  reason: Too Many Requests
+  body:
+    error:
+      code: TooManyRequests
+      message: Some description
+  retry_after_header: false
+  note: >-
+    No Retry-After header is documented. An agent must read x-rate-limit-reset (epoch seconds) to know
+    when to retry; on a 429 with no headers present there is no published backoff guidance.
+retry_guidance:
+  published: false

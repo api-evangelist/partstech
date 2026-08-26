@@ -1,0 +1,101 @@
+generated: '2026-08-26'
+method: probed
+source: live GET probes of /.well-known/* on every PartsTech host in apis.yml and OpenAPI servers[]
+hit_count: 0
+summary: >-
+  PartsTech serves no /.well-known/ discovery documents on any host. Every path probed returned 404 on
+  partstech.com (WordPress 404 template), api.partstech.com and api.beta.partstech.com (the API gateway
+  returns its own JSON envelope {"error":{"code":"MethodNotFound"}}), and api-docs.partstech.com
+  (empty-body 404). app.partstech.com is a single-page-app catch-all that answers HTTP 200 with the
+  same 6,262-byte HTML shell for EVERY /.well-known/* path — these are soft 404s, not documents, and
+  are recorded as misses. No WellKnown or SecurityTxt pointer is emitted.
+hosts:
+- host: https://partstech.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://api.partstech.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://api.beta.partstech.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://api-docs.partstech.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://app.partstech.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: null
+    note: SPA catch-all — 6262-byte HTML shell, not a document
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: null
+    note: SPA catch-all — 6262-byte HTML shell, not a document
+  - path: /.well-known/api-catalog
+    status: 200
+    file: null
+    note: SPA catch-all — 6262-byte HTML shell, not a document
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    file: null
+    note: SPA catch-all — 6262-byte HTML shell, not a document
+soft_404_control:
+  host: https://app.partstech.com
+  probe: /.well-known/openid-configuration
+  status: 200
+  bytes: 6262
+  content_type: text/html
+  verdict: >-
+    Identical byte count and body for every /.well-known/* path probed, including nonsense paths;
+    treated as a catch-all, so no document is recorded and no pointer is emitted.
+a2a_probe:
+  note: >-
+    /.well-known/agent-card.json and /.well-known/agent.json were probed on all five hosts as part of
+    STEP 0b. partstech.com 404, api.partstech.com 404, api.beta.partstech.com 404,
+    api-docs.partstech.com 404, app.partstech.com 200 with the SPA HTML shell (rejected — not an
+    AgentCard object). No agent card exists, so no a2a/ artifact was written.

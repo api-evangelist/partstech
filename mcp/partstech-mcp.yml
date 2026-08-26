@@ -1,0 +1,163 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/partstech-api-openapi.yml
+status: candidate
+summary: >-
+  PartsTech ships NO Model Context Protocol server. Searches of the docs surface, the PartsTech GitHub
+  organization (0 public repos), npm, PyPI and the public MCP registries found nothing, and no MCP
+  endpoint is advertised anywhere on partstech.com or api-docs.partstech.com. The tools below are a
+  CANDIDATE set derived from the published OpenAPI operations to show what an MCP server over this API
+  would expose; no endpoint is asserted and none was guessed.
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: derived
+search_evidence:
+- surface: https://api-docs.partstech.com/openapi.yaml
+  finding: no MCP reference in the 413KB contract
+- surface: https://github.com/partstech
+  finding: organization exists, 0 public repositories
+- surface: npm registry search "partstech"
+  finding: 0 results
+- surface: https://partstech.com/ (site crawl of platform/resources/support navigation)
+  finding: no MCP, agent or AI-integration page
+server:
+  name: partstech
+  transport: null
+  url: null
+tools:
+- name: decode_vin
+  description: Decode a 17-character VIN into a PartsTech vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#decodeVin
+  read_only: true
+- name: decode_plate
+  description: Decode a US license plate and state into a PartsTech vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#decodePlate
+  read_only: true
+- name: list_vehicle_years
+  description: List VCdb model years.
+  source_operation: openapi/partstech-api-openapi.yml#getYears
+  read_only: true
+- name: list_vehicle_makes
+  description: List VCdb makes for a year.
+  source_operation: openapi/partstech-api-openapi.yml#getMakes
+  read_only: true
+- name: list_vehicle_models
+  description: List VCdb models for a year and make.
+  source_operation: openapi/partstech-api-openapi.yml#getModels
+  read_only: true
+- name: list_vehicle_engines
+  description: List VCdb engines for a year, make, model and submodel.
+  source_operation: openapi/partstech-api-openapi.yml#getEngines
+  read_only: true
+- name: get_vehicle
+  description: Get a vehicle by PartsTech vehicleId.
+  source_operation: openapi/partstech-api-openapi.yml#getVehicle
+  read_only: true
+- name: search_part_types
+  description: Search the PCdb part-type taxonomy.
+  source_operation: openapi/partstech-api-openapi.yml#getPartTypes
+  read_only: true
+- name: get_part_type_attributes
+  description: Get the attribute set for a PCdb part type.
+  source_operation: openapi/partstech-api-openapi.yml#getPartTypeAttributes
+  read_only: true
+- name: search_brands
+  description: Search parts brands.
+  source_operation: openapi/partstech-api-openapi.yml#getBrands
+  read_only: true
+- name: search_parts
+  description: Search the parts catalog for a vehicle and part type.
+  source_operation: openapi/partstech-api-openapi.yml#searchParts
+  read_only: true
+  note: backing operation is marked deprecated in the contract
+- name: get_part
+  description: Get full detail for a catalog part.
+  source_operation: openapi/partstech-api-openapi.yml#getPart
+  read_only: true
+- name: validate_fitment
+  description: Validate that a part fits a given vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#validateFitmentForPart
+  read_only: true
+- name: request_quote
+  description: Request live wholesale pricing and availability from suppliers for parts.
+  source_operation: openapi/partstech-api-openapi.yml#requestQuote
+  read_only: true
+- name: line_card_search
+  description: Search a store's line card.
+  source_operation: openapi/partstech-api-openapi.yml#lineCardSearch
+  read_only: true
+- name: list_tire_sizes
+  description: List tire sizes, optionally by vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#tiresSizesByVehicle
+  read_only: true
+- name: list_suppliers
+  description: List suppliers available to the shop.
+  source_operation: openapi/partstech-api-openapi.yml#searchSuppliers
+  read_only: true
+- name: list_supplier_preferences
+  description: List the shop's configured supplier accounts and priorities.
+  source_operation: openapi/partstech-api-openapi.yml#getSupplierPreferences
+  read_only: true
+- name: search_orders
+  description: Search the shop's order history.
+  source_operation: openapi/partstech-api-openapi.yml#getOrders
+  read_only: true
+- name: get_order
+  description: Get one order by id.
+  source_operation: openapi/partstech-api-openapi.yml#getOrder
+  read_only: true
+- name: get_labor
+  description: Get MOTOR labor operations for a vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#getLabor
+  read_only: true
+- name: get_maintenance_schedule
+  description: Get MOTOR maintenance-schedule intervals for a vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#maintenanceSchedulesIntervals
+  read_only: true
+- name: get_fluids
+  description: Get MOTOR fluid specifications for a vehicle.
+  source_operation: openapi/partstech-api-openapi.yml#fluidsSummary
+  read_only: true
+- name: create_cart
+  description: Create a punchout cart session.
+  source_operation: openapi/partstech-api-openapi.yml#createCart
+  read_only: false
+- name: add_part_to_cart
+  description: Add a part to an open punchout cart.
+  source_operation: openapi/partstech-api-openapi.yml#addPartToCart
+  read_only: false
+- name: remove_parts_from_cart
+  description: Remove parts from an open punchout cart (the reversal of add_part_to_cart).
+  source_operation: openapi/partstech-api-openapi.yml#removeItemsFromCart
+  read_only: false
+- name: check_cart_availability
+  description: Verify supplier availability and pricing for everything in the cart before submitting.
+  source_operation: openapi/partstech-api-openapi.yml#checkCartAvailability
+  read_only: false
+  note: The only rehearsal available before an irreversible submit.
+- name: submit_cart
+  description: Place the orders in the cart with the suppliers.
+  source_operation: openapi/partstech-api-openapi.yml#submitCart
+  read_only: false
+  consequence: high
+  irreversible: true
+  note: >-
+    Spends real money against the shop's wholesale supplier accounts. No cancel, void or refund
+    operation exists in this API. Any MCP server over this operation must gate it behind explicit
+    human confirmation.
+excluded_from_candidate_set:
+  reason: >-
+    Destructive or credential-bearing operations that should not be exposed as agent tools without a
+    deliberate policy decision.
+  operations:
+  - replaceLocalInventory
+  - updateLocalInventory
+  - updateShopExPermissions
+  - registerUser
+  - resetPassword
+  - updateBillingAddress
+  - updateShippingAddress

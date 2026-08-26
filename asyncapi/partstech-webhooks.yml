@@ -1,0 +1,93 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/partstech-api-openapi.yml
+asyncapi_spec_published: false
+asyncapi_probe:
+- url: https://api-docs.partstech.com/asyncapi.yaml
+  status: 404
+summary: >-
+  PartsTech publishes no AsyncAPI document, but it does document a real reverse-webhook surface inside
+  the OpenAPI: three partner-hosted callback endpoints that PartsTech POSTs to. The partner supplies the
+  destination as callbackUrl / callbackOrderUrl / registrationUrl when creating a punchout session or a
+  connection form; PartsTech then delivers cart, quote, order and account-connection payloads. The
+  operations are documented from PartsTech's side (request schema = what PartsTech sends), which is why
+  they appear as POST paths in the spec rather than as OpenAPI 3.1 webhooks.
+delivery:
+  style: partner-hosted HTTP callback (reverse webhook)
+  registration: >-
+    Per-session, in the request body — callbackUrl and callbackOrderUrl on punchout cart/session
+    creation, and callbackUrl on POST /partner/user-connect for auto-connect.
+  transport: HTTPS POST, application/json
+  accepted_responses:
+  - 200
+  - 201
+  - 202
+  - 204
+  discriminator_field: action
+  signing: null
+  retries: null
+  note: >-
+    No payload signing scheme, no replay/retry policy and no delivery-guarantee statement is published.
+    The docs warn only that "Please, do not provide invalid callbackUrl. It slows user's work with cart
+    with no effect."
+webhooks:
+- name: cart-callback
+  path: /our-callback
+  tag: callback-cart
+  summary: Cart Callback
+  actions:
+  - SUBMIT_QUOTE
+  - PURCHASE
+  description: >-
+    Sent as soon as a cart button is clicked in the PartsTech punchout UI. SUBMIT_QUOTE delivers quote
+    data (PunchoutOrder items); PURCHASE delivers placed-order data (PunchoutPurchasedOrder items, which
+    add a PartsTech order id).
+  payload_required:
+  - user
+  - sessionId
+  - orders
+  payload_schemas:
+  - PunchoutOrder
+  - PunchoutPurchasedOrder
+  - CartLocalInventoryItem
+- name: tire-quote-callback
+  path: /tire-quote-callback
+  tag: callback-cart
+  summary: Tire Quote Callback
+  actions:
+  - SUBMIT_QUOTE
+  - PURCHASE
+  - TIRE_QUOTE
+  description: >-
+    Delivers tire comparison quote data to the partner when a shop's customer selects a tire from a
+    PartsTech tire comparison quote. Only fires when callbackUrl was supplied.
+  payload_required:
+  - user
+  - sessionId
+  - orders
+  payload_schemas:
+  - PunchoutOrder
+  - CartLocalInventoryItem
+- name: connection-callback
+  path: /our-auto-connect-callback
+  tag: auto-connect
+  summary: Connection Callback
+  actions:
+  - CONNECTION
+  description: >-
+    Delivers a shop's PartsTech Username and API Key to the partner after that shop signs in or signs up
+    through a PartsTech-issued registrationUrl, so the partner can bind the shop's PartsTech account to
+    its own user record. Carries credentials — the partner endpoint must be TLS-protected and treated as
+    a secret sink.
+  payload_required:
+  - smsUserId
+  - action
+  - user
+  payload_schemas:
+  - User
+  sensitivity: high
+coverage:
+  webhook_count: 3
+  event_types: 4
+  signed: false
+  spec: none

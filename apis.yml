@@ -33,34 +33,26 @@ tags:
 - Marketplace
 - Supply Chain
 apis:
-- name: PartsTech External API
+- aid: partstech:partstech-auth-api
+  name: PartsTech Auth API
   description: >-
-    Partner-facing REST API for the PartsTech parts and tire ordering platform. Covers authentication
-    (JWT bearer via /oauth/access), parts search and part detail, brands, ACES/PCdb/VCdb taxonomy
-    (categories, part types, attributes, years/makes/models/submodels/engines), VIN and license plate
-    decoding, quoting and line-card search, punchout and session carts, custom carts, order and partner
-    order history, user/shop profile and supplier preferences, tire sizes and tire quoting, local
-    inventory upload and search, EX permissions, easy registration / auto-connect, and MOTOR- and
-    Mitchell 1-powered labor, maintenance schedules, fluids and specifications content. 101 operations
-    across 93 paths and 136 component schemas.
+    A valid JSON Web Token (JWT) is required to access API methods. A JWT access token must be included
+    in the authorization header of each request in the following Bearer schema:
+
+    ```
+
+    Authorization: Bearer <accessToken>
+
+    ```
+
+    Use the Get Access method to get a valid access token. Each access token expires after 60 minutes.
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
-  - Automotive
-  - Auto Parts
-  - Parts Procurement
-  - Tires
-  - Catalog
-  - Vehicle Data
-  - VIN Decoding
-  - Ordering
-  - Punchout
-  - E-Commerce
+  - auth
   properties:
   - type: OpenAPI
-    url: openapi/partstech-api-openapi.yml
-  - type: Overlay
-    url: overlays/partstech-api-overlay.yaml
+    url: openapi/partstech-auth-api-openapi.yml
   - type: Authentication
     url: authentication/partstech-authentication.yml
   - type: ErrorCatalog
@@ -77,18 +69,916 @@ apis:
     url: conformance/partstech-conformance.yml
   - type: Lifecycle
     url: lifecycle/partstech-lifecycle.yml
-  - type: MCPServer
-    url: mcp/partstech-mcp.yml
   - type: ToolCrosswalk
     url: mcp/partstech-tool-crosswalk.yml
-  - type: AgentSkill
-    url: skills/_index.yml
+- aid: partstech:partstech-auto-connect-api
+  name: PartsTech Auto Connect API
+  description: Easy Registration & Auto-Connect API
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - auto-connect
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-auto-connect-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-brands-api
+  name: PartsTech Brands API
+  description: Brands
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - brands
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-brands-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-callback-cart-api
+  name: PartsTech Callback Cart API
+  description: Callback
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - callback-cart
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-callback-cart-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-custom-cart-api
+  name: PartsTech Custom Cart API
+  description: Custom Cart
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - custom-cart
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-custom-cart-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-ex-permissions-api
+  name: PartsTech Ex Permissions API
+  description: EX Permissions
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - ex-permissions
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-ex-permissions-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-jobs-api
+  name: PartsTech Jobs API
+  description: Jobs
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - jobs
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-jobs-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-local-inventory-api
+  name: PartsTech Local Inventory API
+  description: Local inventory
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - local-inventory
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-local-inventory-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-mitchell1-api
+  name: PartsTech Mitchell1 API
+  description: Vehicles
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - mitchell1
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-mitchell1-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-mitchell1-labor-api
+  name: PartsTech Mitchell1 Labor API
+  description: Labor
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - mitchell1-labor
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-mitchell1-labor-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-motor-fluids-api
+  name: PartsTech Motor Fluids API
+  description: Fluids
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - motor-fluids
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-motor-fluids-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-motor-labor-api
+  name: PartsTech Motor Labor API
+  description: Labor
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - motor-labor
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-motor-labor-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-motor-maintenance-schedules-api
+  name: PartsTech Motor Maintenance Schedules API
+  description: Maintenance Schedules
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - motor-maintenance-schedules
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-motor-maintenance-schedules-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-motor-specifications-api
+  name: PartsTech Motor Specifications API
+  description: Specifications
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - motor-specifications
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-motor-specifications-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-orders-api
+  name: PartsTech Orders API
+  description: Orders
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - orders
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-orders-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-partner-orders-api
+  name: PartsTech Partner Orders API
+  description: Orders methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - partner-orders
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-partner-orders-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-parts-api
+  name: PartsTech Parts API
+  description: Parts
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - parts
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-parts-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-pcdb-api
+  name: PartsTech Pcdb API
+  description: Product Characteristics Database
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - pcdb
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-pcdb-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-punchout-cart-api
+  name: PartsTech Punchout Cart API
+  description: Cart with Punchout
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - punchout-cart
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-punchout-cart-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-punchout-orders-api
+  name: PartsTech Punchout Orders API
+  description: Punchout Orders
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - punchout-orders
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-punchout-orders-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-punchout-quote-api
+  name: PartsTech Punchout Quote API
+  description: Quote Methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - punchout_quote
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-punchout-quote-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-quoting-api
+  name: PartsTech Quoting API
+  description: Quoting
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - quoting
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-quoting-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-search-api
+  name: PartsTech Search API
+  description: Search
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - search
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-search-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-session-cart-api
+  name: PartsTech Session Cart API
+  description: Cart by Session
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - session-cart
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-session-cart-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-shop-api
+  name: PartsTech Shop API
+  description: Shop
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - shop
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-shop-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-shops-api
+  name: PartsTech Shops API
+  description: Shop methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - shops
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-shops-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-supplier-preferences-api
+  name: PartsTech Supplier Preferences API
+  description: Supplier Preferences
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - supplier_preferences
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-supplier-preferences-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-suppliers-api
+  name: PartsTech Suppliers API
+  description: Supplier methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - suppliers
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-suppliers-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-tires-api
+  name: PartsTech Tires API
+  description: Tires
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - tires
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-tires-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-user-api
+  name: PartsTech User API
+  description: User Methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - user
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-user-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-users-api
+  name: PartsTech Users API
+  description: Users methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - users
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-users-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-vcdb-api
+  name: PartsTech Vcdb API
+  description: Vehicle Configuration Database
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - vcdb
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-vcdb-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
+- aid: partstech:partstech-vin-api
+  name: PartsTech Vin API
+  description: VIN Methods
+  humanURL: https://api-docs.partstech.com/openapi.yaml
+  baseURL: https://api.partstech.com
+  tags:
+  - vin
+  properties:
+  - type: OpenAPI
+    url: openapi/partstech-vin-api-openapi.yml
+  - type: Authentication
+    url: authentication/partstech-authentication.yml
+  - type: ErrorCatalog
+    url: errors/partstech-problem-types.yml
+  - type: Webhooks
+    url: asyncapi/partstech-webhooks.yml
+  - type: Conventions
+    url: conventions/partstech-conventions.yml
+  - type: DataModel
+    url: data-model/partstech-data-model.yml
+  - type: RateLimits
+    url: rate-limits/partstech-rate-limits.yml
+  - type: Conformance
+    url: conformance/partstech-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/partstech-lifecycle.yml
+  - type: ToolCrosswalk
+    url: mcp/partstech-tool-crosswalk.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/partstech-api-overlay.yaml
+- type: MCPServer
+  url: mcp/partstech-mcp.yml
+- type: AgentSkill
+  url: skills/_index.yml
 - type: Website
   url: https://partstech.com/
 - type: Documentation

@@ -10,6 +10,18 @@ description: >-
   plate decoding, ACES/PCdb/VCdb taxonomy lookups, live wholesale pricing and availability, punchout
   carts, quoting, tire search, MOTOR and Mitchell 1 labor/maintenance content, order history and local
   inventory into their own software.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://partstech.com/wp-content/uploads/2024/04/partstech-fb-logo.jpg
 url: https://raw.githubusercontent.com/api-evangelist/partstech/refs/heads/main/apis.yml
 x-type: company
@@ -973,6 +985,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/partstech-capability-edges.yml
+  name: PartsTech Business Capability Map
 - type: Overlay
   url: overlays/partstech-api-overlay.yaml
 - type: MCPServer

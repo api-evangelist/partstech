@@ -1,0 +1,1011 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Punchout Quote API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: punchout_quote
+  description: Quote Methods
+  x-displayName: Quotes
+paths:
+  /punchout/quote/create:
+    post:
+      summary: Create quote
+      description: "Creates a new punchout session and returns a unique `sessionId` and `redirectUrl`. The `redirectUrl` is the session URL where your app will send the user to procure parts and tires. Visiting a `redirectUrl` will automatically log the visitor into the user account that the session was created for. Take care not to send one user to a session that was created for a different user. Sessions expire after 120 days for platform performance and stability.\n\nYou can include vehicle identifiers and search parameters in your request. A vehicle identifier will let PartsTech automatically select the vehicle in that session, while a search parameter will trigger an automatic search when the user is sent to the session.\n\nAccepted **vehicle identifiers**:\n  - VIN\n  - Plate & State\n  - PartsTech Vehicle ID\n  - Year, Make, Model, Submodel, Engine\n\nAccepted **search parameters**:\n  - Part Number\n  - Part Type ID\n  - Keyword\n  - Tire Size\n\nCheck out the Request Body Schema below for the possible parameters.\n"
+      operationId: createQuote
+      x-operation-name: CommandPunchoutQuoteCreate
+      tags:
+      - punchout_quote
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                searchParams:
+                  type:
+                  - object
+                  - 'null'
+                  oneOf:
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/VinSearchParams'
+                  - $ref: '#/components/schemas/VinSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/VinSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/VinSearchParamsByTireId'
+                  - $ref: '#/components/schemas/VinSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/PlateSearchParams'
+                  - $ref: '#/components/schemas/PlateSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PlateSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PlateSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PlateSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/TireSizeSearchParams'
+                  - $ref: '#/components/schemas/PartNumberSearchParams'
+                urls:
+                  $ref: '#/components/schemas/URLs'
+                additionalInformation:
+                  $ref: '#/components/schemas/PunchoutAdditionalInformation'
+                settings:
+                  $ref: '#/components/schemas/QuoteSettings'
+            examples:
+              PunchoutVehiclePartTypeSearch:
+                summary: Search by Vehicle and PartTypeIds
+                description: Make a quote with a search by Vehicle and PartTypeIds. `searchParams` accepts only `vehicleParams` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2014
+                      makeId: 21
+                      modelId: 104
+                      subModelId: 3512
+                      engineId: 2062
+                      engineParams:
+                        engineVinId: 31
+                        engineDesignationId: 1
+                        engineVersionId: 73
+                        fuelTypeId: 14
+                        cylinderHeadTypeId: 6
+                    partTypeIds:
+                    - 5132
+                    - 10328
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+                  settings:
+                    poNumber: 123
+              PunchoutVehicleKeywordSearch:
+                summary: Search by Vehicle and Keyword
+                description: Make a quote with a search by Vehicle and PartTypeIds. `searchParams` accepts only `vehicleParams` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2014
+                      makeId: 21
+                      modelId: 104
+                      subModelId: 3512
+                      engineId: 2062
+                      engineParams:
+                        engineVinId: 31
+                        engineDesignationId: 1
+                        engineVersionId: 73
+                        fuelTypeId: 14
+                        cylinderHeadTypeId: 6
+                    keyword: Air Filter
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              PunchoutVehicleTireIdSearch:
+                summary: Search by Vehicle and TireId
+                description: Make a quote with a search by Vehicle and TireId. `searchParams` accepts only `vehicleParams` and `tireId` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2014
+                      makeId: 76
+                      modelId: 1026
+                      subModelId: 3571
+                      engineId: 2578
+                      engineParams:
+                        engineVinId: 1
+                        engineDesignationId: 4833
+                        engineVersionId: 3
+                        fuelTypeId: 14
+                        cylinderHeadTypeId: 6
+                    tireId: 128618
+              PunchoutVehicleTireSizeSearch:
+                summary: Search by Vehicle and Tire Size
+                description: Make a quote with a search by Vehicle and Tire Size. `searchParams` accepts only `vehicleParams`, `width`, `height` and `rim` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2014
+                      makeId: 76
+                      modelId: 1026
+                      subModelId: 3571
+                      engineId: 2578
+                      engineParams:
+                        engineVinId: 1
+                        engineDesignationId: 4833
+                        engineVersionId: 3
+                        fuelTypeId: 14
+                        cylinderHeadTypeId: 6
+                    width: 40
+                    height: 14.5
+                    rim: 18
+              VehicleIdPartTypeSearch:
+                summary: Search by PartsTech Vehicle ID and PartTypeIds
+                description: Make a quote with a search by PartsTech Vehicle ID and PartTypeIds. `searchParams` accepts only `vehicleId` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 287296
+                    partTypeIds:
+                    - 5132
+                    - 10328
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              VehicleIdKeywordSearch:
+                summary: Search by PartsTech Vehicle ID and Keyword
+                description: Make a quote with a search by PartsTech Vehicle ID and Keyword. `searchParams` accepts only `vehicleId` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 287296
+                    keyword: Air Filter
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              VehicleIdTireIdSearch:
+                summary: Search by PartsTech Vehicle ID and TireId
+                description: Make a quote with a search by PartsTech Vehicle ID and TireId. `searchParams` accepts only `vehicleId` and `tireId` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 586988
+                    tireId: 128618
+              VehicleIdTireSizeSearch:
+                summary: Search by PartsTech Vehicle ID and Tire Size
+                description: Make a quote with a search by PartsTech Vehicle ID and Tire Size. `searchParams` accepts only `vehicleId`, `width`, `height` and `rim` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 586988
+                    width: 40
+                    height: 14.5
+                    rim: 18
+              VinPartTypeSearch:
+                summary: Search by VIN and PartTypeIds
+                description: Make a quote with a search by VIN and PartTypeIds. `searchParams` accepts only `vin` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    partTypeIds:
+                    - 1005
+                    - 1006
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              VinKeywordSearch:
+                summary: Search by VIN and Keyword
+                description: Make a quote with a search by VIN and Keyword. `searchParams` accepts only `vin` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    keyword: Air Filter
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              VinTireIdSearch:
+                summary: Search by VIN and TireId
+                description: Make a quote with a search by VIN and TireId. `searchParams` accepts only `vin` and `tireId` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    tireId: 128618
+              VinTireSizeSearch:
+                summary: Search by VIN and Tire Size
+                description: Make a quote with a search by VIN and Tire Size. `searchParams` accepts only `vin`, `width`, `height` and `rim` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    width: 40
+                    height: 14.5
+                    rim: 18
+              PlatePartTypeSearch:
+                summary: Search by Plate and PartTypeIds
+                description: Makes a quote with a search by Plate and PartTypeIds. `searchParams` accepts only `plate` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    partTypeIds:
+                    - 1005
+                    - 1006
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              PlateKeywordSearch:
+                summary: Search by Plate and Keyword
+                description: Makes a quote with a search by Plate and Keyword. `searchParams` accepts only `plate` and `keyword` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    keyword: Air Filter
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+              PlateTireIdSearch:
+                summary: Search by Plate and TireId
+                description: Makes a quote with a search by Plate and TireId. `searchParams` accepts only `plate` and `tireId` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    tireId: 128618
+              PlateTireSizeSearch:
+                summary: Search by Plate and Tire Size
+                description: Makes a quote with a search by Plate and Tire Size. `searchParams` accepts only `plate`, `width`, `height` and `rim` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    width: 40
+                    height: 14.5
+                    rim: 18
+              TireSizeSearch:
+                summary: Search by Tire Size
+                description: Makes a quote with a search by Tire Size. `searchParams` accepts only `width`, `height` and `rim` parameters.
+                value:
+                  searchParams:
+                    width: 40
+                    height: 14.5
+                    rim: 18
+              PartNumberSearch:
+                summary: Search by PartNumber
+                description: Makes a quote with a search by PartNumber. `searchParams` accepts only `partNumber` parameter.
+                value:
+                  searchParams:
+                    partNumber:
+                    - 331
+                  urls:
+                    callbackUrl: http://localhost:80/some-callback-url
+                    callbackOrderUrl: http://localhost:80/some-callback-order-url
+                    returnUrl: http://localhost:80/some-return-url
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - sessionId
+                - redirectUrl
+                properties:
+                  sessionId:
+                    type: string
+                    example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                    description: The unique identifier of a punchout session.
+                  redirectUrl:
+                    type: string
+                    description: The session URL.
+                    format: url
+                    example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+  /punchout/quote/update:
+    post:
+      summary: Update quote
+      description: "Updates the search params and URLs of a given `sessionId`.\n\nReturns a `redirectUrl` for the updated session.\n\nAccepted **vehicle identifiers**:\n  - VIN\n  - Plate & State\n  - PartsTech Vehicle ID\n  - Year, Make, Model, Submodel, Engine\n\nAccepted **search parameters**:\n  - Part Number\n  - Part Type ID\n  - Keyword\n  - Tire Size\n\nCheck out the Request Body Schema below for the possible parameters.\n"
+      operationId: updateQuote
+      x-operation-name: CommandPunchoutQuoteUpdate
+      tags:
+      - punchout_quote
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                  description: The unique identifier of a punchout session.
+                searchParams:
+                  oneOf:
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PunchoutVehicleSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/VinSearchParams'
+                  - $ref: '#/components/schemas/VinSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/VinSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/VinSearchParamsByTireId'
+                  - $ref: '#/components/schemas/VinSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/PlateSearchParams'
+                  - $ref: '#/components/schemas/PlateSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PlateSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PlateSearchParamsByTireId'
+                  - $ref: '#/components/schemas/PlateSearchParamsByTireSize'
+                  - $ref: '#/components/schemas/TireSizeSearchParams'
+                  - $ref: '#/components/schemas/PartNumberSearchParams'
+                urls:
+                  $ref: '#/components/schemas/URLs'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - sessionId
+                - redirectUrl
+                properties:
+                  sessionId:
+                    type: string
+                    example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                    description: The unique identifier of a punchout session.
+                  redirectUrl:
+                    type: string
+                    format: url
+                    example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+                    description: The session URL.
+  /punchout/quote/info:
+    post:
+      summary: Get quote info
+      description: 'Returns details about the punchout session and the `redirectUrl` to open the punchout session.
+
+        '
+      operationId: getQuoteInformation
+      x-operation-name: QueryPunchoutQuoteInfo
+      tags:
+      - punchout_quote
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                  description: The unique identifier of a punchout session.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - sessionId
+                - quote
+                properties:
+                  sessionId:
+                    type: string
+                    example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                    description: The unique identifier of a punchout session.
+                  redirectUrl:
+                    type:
+                    - string
+                    - 'null'
+                    format: url
+                    example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+                    description: The session URL.
+                  quote:
+                    type: object
+                    required:
+                    - status
+                    - submitted
+                    properties:
+                      date:
+                        type: string
+                        format: date-time
+                        description: 'The date and time that the session was created. In the format: ISO 8601/RFC 3339, UTC'
+                      status:
+                        type: string
+                        enum:
+                        - OPEN
+                        - CLOSED
+                        description: The session is OPEN until a purchase method is called on the session to order the items in the cart.
+                      closedDate:
+                        type:
+                        - string
+                        - 'null'
+                        format: date-time
+                        description: 'The date and time that the session was closed. In the format: ISO 8601/RFC 3339, UTC'
+                      submitted:
+                        type: boolean
+                        example: true
+                        description: False until one of the cart buttons is used.
+                      urls:
+                        $ref: '#/components/schemas/URLs'
+  /punchout/quote/stock-order:
+    post:
+      summary: Create Stock Order Quote
+      description: 'Creates a new stock order punchout session with the provided part numbers and quantity of each. Returns a unique `sessionId` for the newly created session and a `redirectUrl` to open the session.
+
+
+        When opening a stock order session, PartsTech attempts to find the correct parts and place those parts on the correct supplier card. The more part information that is provided in the request, the more accurate and efficient the parts selection will be.
+
+
+        Providing the `storeId` for each part enables PartsTech to automatically select the correct supplier for each part on the stock order punchout. This saves users a lot of time. In addition to the `partNumber`, providing each part''s `partId` and `lineCardId` will enable a much more accurate parts selection. Each Id referenced here can be found in the part data for each part in cart callbacks.
+
+        '
+      operationId: createStockOrderQuote
+      x-operation-name: CreatePunchoutQuoteStockOrder
+      tags:
+      - punchout_quote
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - parts
+              properties:
+                parts:
+                  description: Information for one or more parts.
+                  type: array
+                  items:
+                    type: object
+                    description: 'At least one of `partNumber` or `partId` must be provided. Both may be provided together.
+
+                      '
+                    properties:
+                      partNumber:
+                        type:
+                        - string
+                        - 'null'
+                        description: The manufacturer part number. Required if `partId` is not provided.
+                      partId:
+                        type:
+                        - string
+                        - 'null'
+                        pattern: ^.{1,}\-.*$
+                        description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`. Makes part selection more accurate. Required if `partNumber` is not provided.
+                      quantity:
+                        type:
+                        - integer
+                        - 'null'
+                        description: The requested quantity for a part. Automatically fills in the quantity for a part.
+                      storeId:
+                        type:
+                        - integer
+                        - 'null'
+                        description: PartsTech's ID for a supplier location. Automatically places a part on the correct supplier card.
+                      lineCardId:
+                        type:
+                        - integer
+                        - 'null'
+                        description: PartsTech's ID for a line code. Makes part selection much more accurate when provided in requests to create a cart or search the PartsTech Catalog.
+                  example:
+                  - partNumber: 123
+                    partId: DFFD-123
+                    quantity: 1
+                    storeId: 1
+                  - partNumber: 124
+                    partId: DFFD-124
+                    quantity: 2
+                    lineCardId: 1
+                urls:
+                  $ref: '#/components/schemas/URLs'
+                additionalInformation:
+                  $ref: '#/components/schemas/PunchoutAdditionalInformation'
+                settings:
+                  $ref: '#/components/schemas/QuoteSettings'
+                storeId:
+                  description: 'PartsTech Id of a store. Defines a tab that will be opened by default on the stock order page.
+
+
+                    Deprecated. Send storeId for every part.
+
+                    '
+                  type:
+                  - integer
+                  - 'null'
+                  deprecated: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - sessionId
+                - redirectUrl
+                properties:
+                  sessionId:
+                    type: string
+                    example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                    description: The unique identifier of a punchout session.
+                  redirectUrl:
+                    type: string
+                    format: url
+                    example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+components:
+  schemas:
+    VinSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    VinSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    PlateSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    TireIdSearchParams:
+      type: object
+      required:
+      - tireId
+      properties:
+        tireId:
+          type: string
+          description: See [Tire Sizes by vehicle](#operation/tiresSizesByVehicle)
+          example: 1
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
+
+        It consists on Vehicle ID and Part Types or Keyword.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleId
+      properties:
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    TireSizeSearchParams:
+      type: object
+      required:
+      - width
+      - height
+      - rim
+      properties:
+        width:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        height:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        rim:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+    PartsTechVehicleIdSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PunchoutVehicleSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    URLs:
+      type: object
+      properties:
+        callbackUrl:
+          description: The URL for the partner app to receive quote data when the user clicks Submit Quote. If not provided, the Submit Quote button will be removed from the cart.
+          type:
+          - string
+          - 'null'
+          format: url
+          example: http://localhost:80/some-callback-url
+        callbackOrderUrl:
+          description: The URL for the partner app to receive order data when the user clicks Buy Now. If not provided, the Buy Now button will be removed from the cart.
+          type:
+          - string
+          - 'null'
+          format: url
+          example: http://localhost:80/some-callback-order-url
+        returnUrl:
+          description: The URL loaded after a cart button is clicked.
+          type:
+          - string
+          - 'null'
+          format: url
+          example: http://localhost:80/some-return-url
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    PartsTechVehicleIdSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    PlateSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PunchoutVehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    QuoteSettings:
+      type:
+      - object
+      - 'null'
+      properties:
+        poNumber:
+          description: The value that is automatically placed in the PO field in the cart. Typically the Estimate or Repair Order number at the time of session creation.
+          type:
+          - string
+          - 'null'
+    PunchoutVehicleSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PunchoutVehicleSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    PlateSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PartsTechVehicleIdSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PartsTechVehicleIdSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    PunchoutAdditionalInformation:
+      type:
+      - object
+      - 'null'
+      properties:
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 15000
+    PartTypesSearchParams:
+      type: object
+      required:
+      - partTypeIds
+      properties:
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    KeywordSearchParams:
+      type: object
+      required:
+      - keyword
+      properties:
+        keyword:
+          type: string
+          example: Air Filter
+    PunchoutVehicleSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    VinSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

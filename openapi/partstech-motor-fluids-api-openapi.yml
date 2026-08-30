@@ -1,0 +1,628 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Motor Fluids API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: motor-fluids
+  description: Fluids
+  x-displayName: Fluids
+paths:
+  /fluids/summary:
+    post:
+      summary: Get Fluids Summary
+      description: 'Returns all fluid capacities and details for a specific vehicle
+
+        '
+      operationId: fluidsSummary
+      x-operation-name: QueryFluidsSummary
+      tags:
+      - motor-fluids
+      security:
+      - bearerAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - searchParams
+              properties:
+                searchParams:
+                  $ref: '#/components/schemas/SearchParams'
+                include:
+                  type: object
+                  properties:
+                    capacities:
+                      type: boolean
+                      default: true
+                    details:
+                      type: boolean
+                      default: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            Link:
+              $ref: '#/components/headers/MotorComplianceLink'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - applications
+                properties:
+                  applications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FluidsApplication'
+        '400':
+          $ref: '#/components/responses/UnsupportedVehicle'
+        '404':
+          $ref: '#/components/responses/VehicleNotFound'
+  /fluids/details:
+    post:
+      summary: Get Fluids Details By Application ID
+      description: 'Returns all fluid capacities and details for a specific application ID
+
+        '
+      operationId: fluidsDetails
+      x-operation-name: QueryFluidsDetails
+      tags:
+      - motor-fluids
+      security:
+      - bearerAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - searchParams
+              - applicationId
+              properties:
+                searchParams:
+                  $ref: '#/components/schemas/SearchParams'
+                applicationId:
+                  type: number
+      responses:
+        '200':
+          description: OK
+          headers:
+            Link:
+              $ref: '#/components/headers/MotorComplianceLink'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FluidsApplication'
+        '400':
+          $ref: '#/components/responses/UnsupportedVehicle'
+        '404':
+          $ref: '#/components/responses/VehicleNotFound'
+components:
+  headers:
+    MotorComplianceLink:
+      description: 'Labor, maintenance schedules, fluids, and specifications data provided by MOTOR.
+
+        Link to MOTOR''s OEM Compliance Requirements documentation.
+
+        '
+      schema:
+        type: string
+        example: <https://www.motor.com/oem-compliance-requirements/>; rel="compliance"
+  schemas:
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    Grade:
+      type: object
+      description: The grade of the item.
+      required:
+      - code
+      - description
+      properties:
+        code:
+          type: string
+          description: The code representing the grade.
+        description:
+          type: string
+          description: Description of the grade.
+    Capacity:
+      type: object
+      required:
+      - name
+      - items
+      properties:
+        name:
+          type: string
+          description: The name of the capacity.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapacityItem'
+          description: Items related to this capacity.
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    FluidsApplication:
+      type: object
+      required:
+      - applicationId
+      - name
+      - attributes
+      - taxonomy
+      properties:
+        applicationId:
+          type: integer
+          format: int32
+          description: The application ID of an application record.
+        name:
+          type: string
+          description: The name of application.
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of application.
+        position:
+          type:
+          - object
+          - 'null'
+          required:
+          - name
+          - pcdbPositionID
+          properties:
+            name:
+              type: string
+            pcdbPositionID:
+              type: integer
+        taxonomy:
+          type: object
+          required:
+          - id
+          - name
+          - action
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            action:
+              type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - name
+            properties:
+              id:
+                type: integer
+                description: PCDB identifier
+              name:
+                type: string
+                description: PCDB name
+              text:
+                type:
+                - string
+                - 'null'
+                description: Full part name
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FluidsDetailsItem'
+          description: Items that belong to this fluid detail.
+        capacities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capacity'
+          description: Capacities associated with this fluid.
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    SearchParams:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartNumberSearchParams'
+    FluidsDetailsItem:
+      type: object
+      required:
+      - grade
+      - gradePreference
+      - maxCapacity
+      - unitOfMeasure
+      properties:
+        grade:
+          $ref: '#/components/schemas/Grade'
+        gradePreference:
+          type: integer
+          format: int32
+          description: Preference for this grade.
+        maxCapacity:
+          type: integer
+          format: int32
+          description: Maximum capacity of this item.
+        partNumber:
+          type:
+          - string
+          - 'null'
+          description: Part number of this item.
+        specStandard:
+          type:
+          - string
+          - 'null'
+          description: Specification standard, if any.
+        tempRange:
+          type:
+          - string
+          - 'null'
+          description: Temperature range, if applicable.
+        tradeName:
+          type:
+          - string
+          - 'null'
+          description: Trade name of the item.
+        unitOfMeasure:
+          type: string
+          description: Unit of measurement.
+        viscosity:
+          type:
+          - string
+          - 'null'
+          description: Viscosity of the item.
+        formulation:
+          type:
+          - string
+          - 'null'
+          description: Formulation.
+        notes:
+          type: array
+          items:
+            type: string
+          description: Notes related to this details.
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    CapacityItem:
+      type: object
+      required:
+      - unitOfMeasure
+      - extendedParameters
+      - notes
+      properties:
+        unitOfMeasure:
+          type: string
+          description: Unit of measurement for this capacity.
+        extendedParameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtendedParameter'
+          description: Extended parameters for more details.
+        notes:
+          type: array
+          items:
+            type: string
+          description: Notes related to this item.
+        value:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: The value of this capacity item.
+        maxValue:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Maximum value, if applicable.
+        minValue:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Minimum value, if applicable.
+    ExtendedParameter:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: The name of the parameter.
+        value:
+          type: string
+          description: The value of the parameter.
+  responses:
+    VehicleNotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+            example:
+              error:
+                code: NotFound
+                message: Vehicle was not found
+    UnsupportedVehicle:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+            example:
+              error:
+                code: UnsupportedVehicle
+                message: MOTOR does not currently support data for Canadian vehicles.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

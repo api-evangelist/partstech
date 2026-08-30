@@ -1,0 +1,603 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Punchout Orders API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: punchout-orders
+  description: Punchout Orders
+  x-displayName: Punchout Orders
+paths:
+  /punchout/orders:
+    post:
+      summary: Get orders by session.
+      description: Returns orders placed during the session with the provided `sessionId`. For partner applications that do not use cart callbacks, this method can be used to get orders that were purchased during a punchout session.
+      operationId: getPunchoutOrders
+      x-operation-name: QueryPunchoutOrders
+      tags:
+      - punchout-orders
+      security:
+      - bearerAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                  description: The unique identifier of a punchout session.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    Address:
+      type: object
+      description: Address of the user's shop
+      required:
+      - address1
+      - city
+      - state
+      - zipCode
+      properties:
+        address1:
+          type: string
+          example: 1 Broadway
+        address2:
+          type:
+          - string
+          - 'null'
+          example: 14th Floor
+        city:
+          type: string
+          example: Cambridge
+        state:
+          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          example: MA
+        zipCode:
+          type: string
+          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
+          example: '02142'
+        country:
+          description: ISO 3166-1 alpha-2
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          default: US
+          example: US
+    Order:
+      type: object
+      required:
+      - id
+      - supplier
+      - store
+      - shippingAddress
+      - delivery
+      - tax
+      - totalPrice
+      - totalDiscount
+      - coreCharge
+      - fet
+      - shippingPrice
+      - paymentType
+      - orderUrl
+      - status
+      - parts
+      properties:
+        id:
+          type: integer
+        supplier:
+          $ref: '#/components/schemas/BriefSupplier'
+        store:
+          $ref: '#/components/schemas/PaidOrderStore'
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        delivery:
+          type: object
+          required:
+          - name
+          - price
+          - status
+          properties:
+            name:
+              type:
+              - string
+              - 'null'
+              example: hotshot
+            price:
+              type: number
+              format: float
+              example: 1.24
+            status:
+              description: Status of delivery. Enum values can be changed.
+              type: string
+              enum:
+              - Order not placed
+              - Order placed
+              - Acknowledged
+              - Received
+              - Shipping
+              - Shipped
+              - Completed
+              - Cancelled
+              - Returned
+            date:
+              description: Delivery Date, ISO 8601/RFC 3339, UTC
+              type:
+              - string
+              - 'null'
+              format: date-time
+        tax:
+          type: number
+          format: float
+          example: 9.01
+        totalPrice:
+          type: number
+          format: float
+          example: 25
+        totalDiscount:
+          type: number
+          format: float
+          example: 2
+        coreCharge:
+          type: number
+          format: float
+          example: 12
+        fet:
+          type: number
+          description: The Federal Excise Tax (FET)
+          format: float
+          example: 1.2
+        shippingPrice:
+          type: number
+          format: number
+          example: 1.24
+        paymentType:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CreditCard
+          - Wholesale
+        poNumber:
+          type:
+          - string
+          - 'null'
+          example: PoNumber
+        invoiceNumbers:
+          type: array
+          items:
+            type: string
+          example:
+          - 123123
+          - dsfssre
+        notes:
+          type:
+          - string
+          - 'null'
+          example: Notes
+        orderUrl:
+          type: string
+          example: https://app.partstech.com/some-invoice-url
+        paymentDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO 8601/RFC 3339, UTC
+        status:
+          type: string
+          enum:
+          - In Progress
+          - Completed
+          - Returned
+          - Failed
+        rewards:
+          $ref: '#/components/schemas/Rewards'
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchasedPart'
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    OrderStore:
+      description: Store Data for Unpaid Orders
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - address
+        properties:
+          address:
+            $ref: '#/components/schemas/Address'
+    PartPrice:
+      type: object
+      required:
+      - cost
+      - core
+      - fet
+      properties:
+        list:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 1.2
+          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
+        price:
+          type: number
+          format: float
+          example: 1.6
+          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
+        cost:
+          type: number
+          format: float
+          example: 1.24
+          description: Cost of an item for the user including any discounts. Excludes any core charges.
+        core:
+          type: number
+          format: float
+          example: 0.4
+          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
+        fet:
+          type:
+          - number
+          - 'null'
+          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
+          format: float
+          example: 1.2
+        retail:
+          type:
+          - number
+          - 'null'
+          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
+          format: float
+          example: 2
+        discount:
+          type:
+          - number
+          - 'null'
+          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
+          format: float
+          example: 0.2
+        map:
+          type:
+          - number
+          - 'null'
+          description: Minimum Advertised Price
+          format: float
+          example: 1.9
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
+    PaidOrderStore:
+      description: Store Data for Paid Orders
+      allOf:
+      - $ref: '#/components/schemas/OrderStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+    PurchasedPart:
+      type: object
+      required:
+      - partId
+      - partNumber
+      - partName
+      - quantity
+      - price
+      - partstechCatalogURL
+      - brand
+      properties:
+        partId:
+          type: string
+          example: ABCD-12345
+        lineCardId:
+          type:
+          - integer
+          - 'null'
+          description: 'PartsTech''s ID for a line code. Makes part selection much more
+
+            accurate when provided in requests to create a cart or search the PartsTech
+
+            Catalog.
+
+            '
+        partNumber:
+          type: string
+          example: 12345
+          description: The manufacturer part number.
+        partName:
+          type: string
+          example: Motorcraft Engine Oil Filter
+          description: "The name of the part. \nPart name is typically the brand name + the part type name.\nFor tires it is typically the brand name + model.\nThere is a shop setting that can be enabled to remove the brand name from this field\nfor all parts (tires excluded).\n"
+        quantity:
+          type: integer
+          example: 2
+        quantityDelivered:
+          type: integer
+          example: 2
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        deliveryStatus:
+          type: string
+          enum:
+          - New
+          - Not Shipped
+          - Shipped
+          - Delivered
+          - Cancel Requested
+          - Cancel Approved
+          - Cancelled
+          - Return Initiated
+          - Return Approved
+          - Returned
+          example: Shipped
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part image that PartsTech uses for the part.
+          example: https://image.partstech.com/d1/images/e4/11/71/w110_e411711499973c7640e852e84ed20fca0cd5c9d2.png
+        partstechCatalogURL:
+          type: string
+          format: url
+          description: The URL of the part's description on PartsTech.
+          example: https://punchout.partstech.com/Motorcraft-Engine-Oil-Filter/details/BBRH-FL-500-S?part_term=5340
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          description: "Name of the vehicle selected for fitment during the PartsTech session. \nTypically consists of year, make, model, and engine.\n"
+        brand:
+          $ref: '#/components/schemas/Brand'
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        searchedAsPartNumber:
+          type:
+          - string
+          - 'null'
+        bundled:
+          type: boolean
+          example: true
+          description: Returns true if the part is included in a bundled deal with one or more other parts in the order.
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

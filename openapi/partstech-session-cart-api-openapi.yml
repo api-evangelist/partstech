@@ -1,0 +1,1499 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Session Cart API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: session-cart
+  description: Cart by Session
+  x-displayName: Cart by Session
+paths:
+  /punchout/cart/submit:
+    post:
+      summary: Submit Cart
+      description: 'Orders all of the parts in the cart for the provided punchout `sessionId`.
+
+
+        Returns the orders that were placed.
+
+        '
+      operationId: submitCart
+      x-operation-name: CommandPunchoutCartSubmit
+      tags:
+      - session-cart
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  description: The unique identifier of a punchout session.
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                orderParams:
+                  type:
+                  - array
+                  - 'null'
+                  description: To provide additional options for specific orders, such as `poNumber` and `notes`.
+                  items:
+                    type: object
+                    required:
+                    - storeId
+                    properties:
+                      storeId:
+                        type: integer
+                        description: PartsTech's ID for a supplier location. Identifies an order in the cart.
+                      poNumber:
+                        type:
+                        - string
+                        - 'null'
+                        description: Optional. If a value is included here, any PO number provided earlier in the quoting process for the specified order will be overwritten.
+                        deprecated: true
+                      notes:
+                        type:
+                        - string
+                        - 'null'
+                        description: Optional. If a value is included here, any supplier notes provided earlier in the quoting process for the specified order will be overwritten.
+                poNumber:
+                  type:
+                  - string
+                  - 'null'
+                  description: 'Optional.
+
+
+                    If a value is included here, it will overwrite any previously provided PO numbers for all orders in the session.
+
+                    '
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PunchoutPurchasedCartResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InvalidRequestError'
+                - $ref: '#/components/schemas/RequiredAdditionalParametersError'
+                - $ref: '#/components/schemas/EmptyCartError'
+        '402':
+          description: Some orders are not available for purchasing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/OrderAvailabilityError'
+                - $ref: '#/components/schemas/OrderNotPlacedError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  properties:
+                    error:
+                      $ref: '#/components/schemas/Error'
+                  example:
+                    error:
+                      code: NotFound
+                      message: Session was not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockedSessionError'
+        '432':
+          description: Integration Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationError'
+  /punchout/cart/info:
+    post:
+      summary: Get Cart
+      description: 'Gets the current cart information for the provided `sessionId`.
+
+
+        **Note**: For desktop applications that lack the ability to use cart callback functionality, this method should be used to get cart information. In this case, our cart buttons cannot be used. The partner application will need to add a button on the PartsTech punchout for users to click when they are ready to transfer cart items to the partner application.
+
+        '
+      operationId: getCart
+      x-operation-name: QueryPunchoutCartInfo
+      tags:
+      - session-cart
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                  description: The unique identifier of a punchout session.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PunchoutCartResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InvalidRequestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  properties:
+                    error:
+                      $ref: '#/components/schemas/Error'
+                  example:
+                    error:
+                      code: NotFound
+                      message: Session was not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockedSessionError'
+  /punchout/cart/availability:
+    post:
+      summary: Check Cart Availability
+      description: 'Gets real-time pricing and availability information directly from suppliers for each cart item of the provided `sessionId`. Pricing and availability can change from the time an item is quoted, to the time it is ordered. This method should be used before attempting to place an order, so users can be notified of any price changes or unavailable items.
+
+
+        **Note**: While the PartsTech API is optimized to deliver quick responses, this endpoint depends on the response times of suppliers'' APIs, which may vary.
+
+
+        If all items are available in the requested quantities, a successful response with a 200 HTTP status code will be returned. The response will include a list of orders with the current cost of each item. Make sure to check other pricing fields for any changes that would affect the total cost, such as `shippingPrice` or `fet` (if applicable).
+
+
+        If there are pricing changes, it is recommended to update the necessary values in the work order and inform the user about the changes. The user can decide whether to proceed with the order at the updated total cost or not.
+
+
+        When one or more items are unavailable for ordering, a response with a 402 HTTP status code will be returned. The response will contain details about the availability error, including which items were unavailable and errors fields specifying the reason for each item.
+
+
+        In such cases, it is highly recommended to inform the user about the unavailable items and let them decide on the next steps. They may choose to proceed with ordering the available items and return later for the currently unavailable ones when they become available. Alternatively, they can punchout to PartsTech to explore alternative items that are currently available for immediate ordering.
+
+        '
+      operationId: checkCartAvailability
+      x-operation-name: QueryPunchoutCartAvailability
+      tags:
+      - session-cart
+      security:
+      - bearerAuth:
+        - user
+      - apiKeyAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+                  description: The unique identifier of a punchout session.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PunchoutCartResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InvalidRequestError'
+                - $ref: '#/components/schemas/RequiredAdditionalParametersError'
+        '402':
+          description: Some orders are not available for purchasing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/OrderAvailabilityError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  properties:
+                    error:
+                      $ref: '#/components/schemas/Error'
+                  example:
+                    error:
+                      code: NotFound
+                      message: Session was not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockedSessionError'
+        '432':
+          description: Integration Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationError'
+components:
+  schemas:
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    InvalidRequestError:
+      description: Malformed request. The request body is not parse-able or with invalid content.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        validationErrors:
+          type: array
+          items:
+            type: string
+      example:
+        error:
+          code: InvalidRequestSyntax
+          message: Cannot parse request. Invalid data format
+        validationErrors:
+        - credentials.user.key - This value should not be blank.
+        - credentials.user.id - This value should be of type string.
+        - credentials.partner - This value should not be blank.
+    PunchoutPurchasedCartResponse:
+      type: object
+      required:
+      - sessionId
+      - orders
+      properties:
+        sessionId:
+          type: string
+          example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+          description: The unique identifier of a punchout session.
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/PunchoutPurchasedOrder'
+        localInventoryItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartLocalInventoryItem'
+        redirectUrl:
+          type: string
+          example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+        selectedLaborItems:
+          type:
+          - array
+          - 'null'
+          description: 'Labor items that were selected by user.
+
+
+            Labor items may be attached to items and cart/punchout session.
+
+
+            Selected labor items are not used (they will not be copied or returned) in next methods:
+
+            - [Create Custom Cart](#operation/customCartCreate)
+
+            - [Order Custom Cart](#operation/submitItems)
+
+            - [Check Custom Cart Availability](#operation/checkItemsAvailability)
+
+            '
+          items:
+            $ref: '#/components/schemas/PunchoutLaborItem'
+    PunchoutPurchasedOrder:
+      allOf:
+      - type: object
+        required:
+        - id
+        - orderUrl
+        properties:
+          id:
+            description: The PartsTech ID for the order.
+            type: integer
+            example: 128577
+          orderUrl:
+            type: string
+            example: https://app.partstech.com/some-invoice-url
+            description: The URL of the PartsTech order details page.
+      - $ref: '#/components/schemas/PunchoutOrder'
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    DeliveryNote:
+      type: object
+      required:
+      - label
+      - text
+      - date
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+    OrderAvailabilityError:
+      description: Some orders are not available for purchasing
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        errorDetails:
+          type: array
+          items:
+            type: object
+            required:
+            - supplier
+            - store
+            properties:
+              supplier:
+                $ref: '#/components/schemas/BriefSupplier'
+              store:
+                $ref: '#/components/schemas/BriefStore'
+              errors:
+                type: array
+                items:
+                  type: string
+              parts:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - orderItemId
+                  - partId
+                  - quantity
+                  properties:
+                    orderItemId:
+                      type: string
+                      description: The unique identifier for an item added to a cart. This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method).
+                    partId:
+                      type: string
+                    quantity:
+                      type: integer
+                    errors:
+                      type: array
+                      items:
+                        type: string
+        localInventoryItemErrors:
+          type: array
+          items:
+            type: object
+            required:
+            - itemId
+            - inventoryUID
+            - partId
+            - quantity
+            - errors
+            properties:
+              itemId:
+                type: string
+                example: 0ze4f01824764a61991b9d090fdc1813
+                description: 'The unique identifier for an item added to a cart.
+
+                  This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method)."
+
+                  '
+              inventoryUID:
+                type: string
+                example: 123123123
+                description: ID of item in local inventory.
+              partId:
+                type: string
+                example: ABCD-12345
+                description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`.
+              quantity:
+                type: integer
+                example: 2
+                description: The requested quantity for a part.
+              errors:
+                type: array
+                description: List of errors.
+                items:
+                  type: string
+      example:
+        error:
+          code: OrderAvailabilityError
+          message: Some orders are not available for purchasing
+    PartPrice:
+      type: object
+      required:
+      - cost
+      - core
+      - fet
+      properties:
+        list:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 1.2
+          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
+        price:
+          type: number
+          format: float
+          example: 1.6
+          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
+        cost:
+          type: number
+          format: float
+          example: 1.24
+          description: Cost of an item for the user including any discounts. Excludes any core charges.
+        core:
+          type: number
+          format: float
+          example: 0.4
+          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
+        fet:
+          type:
+          - number
+          - 'null'
+          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
+          format: float
+          example: 1.2
+        retail:
+          type:
+          - number
+          - 'null'
+          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
+          format: float
+          example: 2
+        discount:
+          type:
+          - number
+          - 'null'
+          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
+          format: float
+          example: 0.2
+        map:
+          type:
+          - number
+          - 'null'
+          description: Minimum Advertised Price
+          format: float
+          example: 1.9
+    PunchoutOrder:
+      type: object
+      required:
+      - supplier
+      - store
+      - delivery
+      - buyerShop
+      - tax
+      - totalPrice
+      - totalDiscount
+      - coreCharge
+      - fet
+      - shippingPrice
+      - paymentType
+      - parts
+      properties:
+        supplier:
+          $ref: '#/components/schemas/CartSearchSupplier'
+        store:
+          oneOf:
+          - $ref: '#/components/schemas/OrderStore'
+          - $ref: '#/components/schemas/PaidOrderStore'
+        delivery:
+          description: Delivery details
+          type: object
+          required:
+          - price
+          properties:
+            name:
+              type:
+              - string
+              - 'null'
+              example: hotshot
+              description: Type of delivery
+            price:
+              type: number
+              format: float
+              example: 1.24
+              description: Cost of delivery
+        buyerShop:
+          $ref: '#/components/schemas/Address'
+        tax:
+          type: number
+          format: float
+          example: 9.01
+          description: Sales tax, if applicable. Typically shops are tax-exempt.
+        totalPrice:
+          type: number
+          format: float
+          example: 25
+          description: Total price charged to the user for an order, includes discounts and core charge if applicable.
+        totalDiscount:
+          type: number
+          format: float
+          example: 5
+          description: Total discounts for an order
+        coreCharge:
+          type: number
+          format: float
+          example: 12
+          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
+        fet:
+          type: number
+          description: The Federal Excise Tax (FET). The tax imposed by the federal government on tires used on the road with a maximum load capacity greater then 3500 pounds. Only 100% accurate FET values are present in this field.
+          format: float
+          example: 1.2
+        shippingPrice:
+          type: number
+          format: float
+          example: 1.24
+          description: Cost of delivery.
+        paymentType:
+          type: string
+          enum:
+          - CreditCard
+          - Wholesale
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PunchoutOrderPart'
+        poNumber:
+          type:
+          - string
+          - 'null'
+          example: 2743
+          description: The purchase order number
+        notes:
+          type:
+          - string
+          - 'null'
+          example: Notes
+          description: Supplier notes
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    RequiredAdditionalParametersError:
+      description: Supplier requires additional parameters that should be filled in the cart.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        sessionId:
+          type:
+          - string
+          - 'null'
+          description: The identifier of a punchout session.
+        redirectUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+      example:
+        error:
+          code: RequiredAdditionalParametersError
+          message: Supplier requires additional parameters that should be filled in the cart.
+        sessionId: Session id
+        redirectUrl: http://localhost:80/redirect-url
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+    CartSearchSupplier:
+      allOf:
+      - $ref: '#/components/schemas/BriefSupplier'
+      - type: object
+        required:
+        - allowStoreSelect
+        - availabilitySelect
+        properties:
+          allowStoreSelect:
+            type: boolean
+            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
+          availabilitySelect:
+            type: boolean
+            description: If true for a supplier, users are required to select a specific store when sourcing parts.
+          postOrderUpdates:
+            type: boolean
+            description: If true for a supplier, order can be updated after they placed.
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
+    CartLocalInventoryItem:
+      type: object
+      required:
+      - itemId
+      - inventoryUID
+      - partId
+      - quantity
+      - price
+      - partName
+      - partNumber
+      - availability
+      - brand
+      properties:
+        itemId:
+          type: string
+          example: 0ze4f01824764a61991b9d090fdc1813
+          description: 'The unique identifier for an item added to a cart.
+
+            This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method)."
+
+            '
+        inventoryUID:
+          type: string
+          example: 123123123
+          description: ID of item in local inventory.
+        partId:
+          type: string
+          example: ABCD-12345
+          description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`.
+        quantity:
+          type: integer
+          example: 2
+          description: The requested quantity for a part.
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        partName:
+          type: string
+          example: Motorcraft Engine Oil Filter
+          description: The name of the part. Part name is typically the brand name + the part type name. For tires it is typically the brand name + model. There is a shop setting that can be enabled to remove the brand name from this field for all parts (tires excluded).
+        partNumber:
+          type: string
+          example: 12345
+          description: The manufacturer part number.
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part image that PartsTech uses for the part.
+          example: https://image.partstech.com/d1/images/e4/11/71/w110_e411711499973c7640e852e84ed20fca0cd5c9d2.png
+        partstechCatalogURL:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part's description on PartsTech.
+          example: https://punchout.partstech.com/Motorcraft-Engine-Oil-Filter/details/BBRH-FL-500-S?part_term=5340
+        availability:
+          type: boolean
+          example: true
+          description: Returns true if the part is available at the time of quoting.
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          description: Name of the vehicle selected for fitment during the PartsTech session. Typically consists of year, make, model, and engine.
+        brand:
+          $ref: '#/components/schemas/Brand'
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        searchedAsPartNumber:
+          type:
+          - string
+          - 'null'
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Attribute'
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    LockedSessionError:
+      description: Another current action blocks executing
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      example:
+        error:
+          code: LockedSession
+          message: One of cart operations in progress
+    PunchoutCartResponse:
+      type: object
+      required:
+      - sessionId
+      - orders
+      properties:
+        sessionId:
+          type: string
+          example: 1ag3d2b5240e4jcbbe3ee9c49c929fe4
+          description: The unique identifier of a punchout session.
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/PunchoutOrder'
+        localInventoryItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartLocalInventoryItem'
+        redirectUrl:
+          type: string
+          example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
+        selectedLaborItems:
+          type:
+          - array
+          - 'null'
+          description: 'Labor items that were selected by user.
+
+
+            Labor items may be attached to items and cart/punchout session.
+
+
+            Selected labor items are not used (they will not be copied or returned) in next methods:
+
+            - [Create Custom Cart](#operation/customCartCreate)
+
+            - [Order Custom Cart](#operation/submitItems)
+
+            - [Check Custom Cart Availability](#operation/checkItemsAvailability)
+
+            '
+          items:
+            $ref: '#/components/schemas/PunchoutLaborItem'
+    IntegrationError:
+      description: Integration Error
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        errorDetails:
+          type: array
+          items:
+            type: object
+            required:
+            - supplier
+            properties:
+              supplier:
+                $ref: '#/components/schemas/BriefSupplier'
+              errors:
+                type: array
+                items:
+                  type: string
+      example:
+        error:
+          code: IntegrationError
+          message: Some supplier integrations didn't respond. Please check error details.
+        errorDetails:
+        - supplier:
+            id: 1
+            name: Supplier
+          errors:
+          - Integration is not responding
+    EmptyCartError:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      example:
+        error:
+          code: EmptyCartError
+          message: Can`t process cart. Cart is empty
+    ItemizedItemQuote:
+      type:
+      - object
+      - 'null'
+      required:
+      - tax
+      - lines
+      properties:
+        tax:
+          type: number
+          format: float
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemizedQuotePricingLine'
+    Address:
+      type: object
+      description: Address of the user's shop
+      required:
+      - address1
+      - city
+      - state
+      - zipCode
+      properties:
+        address1:
+          type: string
+          example: 1 Broadway
+        address2:
+          type:
+          - string
+          - 'null'
+          example: 14th Floor
+        city:
+          type: string
+          example: Cambridge
+        state:
+          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          example: MA
+        zipCode:
+          type: string
+          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
+          example: '02142'
+        country:
+          description: ISO 3166-1 alpha-2
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          default: US
+          example: US
+    PunchoutOrderPart:
+      type: object
+      required:
+      - orderItemId
+      - partId
+      - quantity
+      - price
+      - partName
+      - partNumber
+      - partstechCatalogURL
+      - availability
+      - bundled
+      - brand
+      properties:
+        orderItemId:
+          type: string
+          example: 0ze4f01824764a61991b9d090fdc1813
+          description: The unique identifier for an item added to a cart. This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method).
+        partId:
+          type: string
+          example: ABCD-12345
+          description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`.
+        lineCardId:
+          type:
+          - string
+          - 'null'
+          example: 123
+          description: PartsTech's ID for a line code. Makes part selection much more accurate when provided in requests to create a cart or search the PartsTech Catalog.
+        quantity:
+          type: integer
+          example: 2
+          description: The requested quantity for a part.
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        partName:
+          type: string
+          example: Motorcraft Engine Oil Filter
+          description: The name of the part. Part name is typically the brand name + the part type name. For tires it is typically the brand name + model. There is a shop setting that can be enabled to remove the brand name from this field for all parts (tires excluded).
+        partNumber:
+          type: string
+          example: 12345
+          description: The manufacturer part number.
+        variationId:
+          type:
+          - string
+          - 'null'
+          deprecated: true
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part image that PartsTech uses for the part.
+          example: https://image.partstech.com/d1/images/e4/11/71/w110_e411711499973c7640e852e84ed20fca0cd5c9d2.png
+        partstechCatalogURL:
+          type: string
+          format: url
+          description: The URL of the part's description on PartsTech.
+          example: https://punchout.partstech.com/Motorcraft-Engine-Oil-Filter/details/BBRH-FL-500-S?part_term=5340
+        availability:
+          type: boolean
+          example: true
+          description: Returns true if the part is available at the time of quoting.
+        backOrder:
+          type: boolean
+          example: true
+          description: Returns true if the requested quantity is more than the available quantity and the remaining quantity will be back ordered.
+        bundled:
+          type: boolean
+          example: true
+          description: Returns true if the part is included in a bundled deal with one or more other parts in the order.
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          description: Name of the vehicle selected for fitment during the PartsTech session. Typically consists of year, make, model, and engine.
+        brand:
+          $ref: '#/components/schemas/Brand'
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        tireSize:
+          type:
+          - string
+          - 'null'
+          deprecated: true
+        searchedAsPartNumber:
+          type:
+          - string
+          - 'null'
+        rewards:
+          $ref: '#/components/schemas/Rewards'
+        selectedLaborItems:
+          type:
+          - array
+          - 'null'
+          description: 'Labor items that were selected by user.
+
+
+            Labor items may be attached to items and cart/punchout session.
+
+
+            Selected labor items are not used (they will not be copied or returned) in next methods:
+
+            - [Create Custom Cart](#operation/customCartCreate)
+
+            - [Order Custom Cart](#operation/submitItems)
+
+            - [Check Custom Cart Availability](#operation/checkItemsAvailability)
+
+            '
+          items:
+            $ref: '#/components/schemas/PunchoutLaborItem'
+        storesAvailability:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            minProperties: 2
+            required:
+            - quantity
+            properties:
+              specificName:
+                type: string
+                example: In network
+              store:
+                $ref: '#/components/schemas/BriefStore'
+              quantity:
+                type: integer
+                example: 3
+              main:
+                type: boolean
+                example: true
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Attribute'
+        deliveryNotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryNote'
+        itemizedQuote:
+          $ref: '#/components/schemas/ItemizedItemQuote'
+    OrderStore:
+      description: Store Data for Unpaid Orders
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - address
+        properties:
+          address:
+            $ref: '#/components/schemas/Address'
+    ItemizedQuotePricingLine:
+      type: object
+      required:
+      - name
+      - type
+      - price
+      - taxed
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - TIRES
+          - LABOR
+          - DISPOSAL
+          - ADDON
+          - FEE
+          - DISCOUNT
+          description: Do allow to receive extra types
+        price:
+          type: number
+          format: float
+        perTirePrice:
+          type:
+          - number
+          - 'null'
+          format: float
+        taxed:
+          type: boolean
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    PunchoutLaborItem:
+      type: object
+      required:
+      - laborItemId
+      - source
+      - name
+      - notes
+      - skill
+      - requiredSkill
+      - hours
+      - price
+      - maintenance
+      properties:
+        laborItemId:
+          type: string
+        source:
+          type: string
+          enum:
+          - MOTOR
+          - MITCHELL
+          - CUSTOM
+          example: MOTOR
+          description: Source of labor application. Motor, mitchell APIs or manually entered data.
+        name:
+          type: string
+          description: Name of labor application
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Nots for labor application
+        skill:
+          type: string
+          description: Required skill
+        requiredSkill:
+          type: object
+          description: Required skill
+          required:
+          - code
+          - name
+          - description
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+        hours:
+          type: number
+          format: float
+          description: Required hours
+        price:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Hours * labor rate
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        partTypeId:
+          type:
+          - integer
+          - 'null'
+          description: The ID of a part type from the Autocare Association's PCdb.
+        taxonomy:
+          type:
+          - object
+          - 'null'
+          description: Motor Taxonomy
+          required:
+          - name
+          - action
+          properties:
+            taxonomyId:
+              type:
+              - integer
+              - 'null'
+            name:
+              type: string
+            action:
+              type: string
+        maintenance:
+          type:
+          - object
+          - 'null'
+          description: Additional maintenance schedules data
+          required:
+          - severity
+          properties:
+            severity:
+              type: string
+              enum:
+              - Severe
+              - Normal
+          oneOf:
+          - type: object
+            properties:
+              interval:
+                type: object
+                required:
+                - interval
+                - type
+                properties:
+                  value:
+                    type: integer
+                    example: 10000
+                  type:
+                    type: string
+                    enum:
+                    - Miles
+                    - Months
+          - type: object
+            properties:
+              indicator:
+                type: object
+                description: Maintenance based on an indicator
+                required:
+                - name
+                properties:
+                  name:
+                    type: string
+                    example: Service 1
+    PaidOrderStore:
+      description: Store Data for Paid Orders
+      allOf:
+      - $ref: '#/components/schemas/OrderStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+    OrderNotPlacedError:
+      description: The Order(s) cannot be placed due to required credit card transaction
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        sessionId:
+          type:
+          - string
+          - 'null'
+          description: The identifier of a punchout session.
+        redirectUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+      example:
+        error:
+          code: OrderNotPlacedError
+          message: Order cannot be placed without going through the cart. One of the suppliers requires credit card transaction.
+        sessionId: Session id
+        redirectUrl: http://localhost:80/redirect-url
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

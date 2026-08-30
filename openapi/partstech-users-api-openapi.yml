@@ -1,0 +1,439 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Users API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: users
+  description: Users methods
+  x-displayName: Users
+paths:
+  /users:
+    get:
+      summary: Get User List
+      description: 'Search users by `username`, `email`, `lastName`.
+
+
+        **Note**. It is allowed to receive only users that are connected to the partner who made the request.
+
+        '
+      operationId: searchUsers
+      x-operation-name: GetAllUsers
+      tags:
+      - users
+      security:
+      - bearerAuth:
+        - partner
+      parameters:
+      - name: username
+        in: query
+        schema:
+          type: string
+          minLength: 3
+          pattern: .{3,}
+        example: mechanic
+      - name: email
+        in: query
+        schema:
+          type: string
+          minLength: 3
+          pattern: .{3,}
+        example: man
+      - name: lastName
+        in: query
+        schema:
+          type: string
+          minLength: 3
+          pattern: .{3,}
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/perPage'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 0
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    required:
+                    - shops
+                    properties:
+                      shops:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EntireShop'
+    post:
+      summary: Register User
+      description: 'Register a new user in PartsTech.
+
+
+        We strongly recommend to change password for the user after that using PartsTech site.
+
+
+        Registered users will be disabled until they approved their account (An email with activation link will be sent).
+
+        '
+      operationId: registerUser
+      x-operation-name: RegisterUser
+      tags:
+      - users
+      security:
+      - bearerAuth:
+        - partner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - username
+              - email
+              - password
+              - firstName
+              - lastName
+              - shop
+              properties:
+                username:
+                  type: string
+                  minLength: 5
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 5
+                  maxLength: 255
+                firstName:
+                  type: string
+                  minLength: 1
+                lastName:
+                  type: string
+                  minLength: 1
+                shop:
+                  type: object
+                  required:
+                  - name
+                  - phone
+                  - billingAddress
+                  - shippingAddress
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                    otherBusinessName:
+                      type:
+                      - string
+                      - 'null'
+                    phone:
+                      type: string
+                      pattern: \(\d{3}\)\s\d{3}-\d{4}(\s?x\d{1,5})?
+                    cellphone:
+                      type: string
+                      pattern: \(\d{3}\)\s\d{3}-\d{4}(\s?x\d{1,5})?
+                    billingAddress:
+                      $ref: '#/components/schemas/Address'
+                    shippingAddress:
+                      $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - user
+                - messages
+                - redirectUrl
+                properties:
+                  user:
+                    allOf:
+                    - $ref: '#/components/schemas/User'
+                    - type: object
+                      required:
+                      - shops
+                      - apiKey
+                      properties:
+                        shops:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/EntireShop'
+                        apiKey:
+                          type: string
+                  redirectUrl:
+                    type: string
+                    format: url
+  /users/{username}:
+    get:
+      summary: Get User
+      description: 'Returns an user by username. It is allowed to receive only users that are connected to the partner who made the request.
+
+        '
+      operationId: getUserByUsername
+      x-operation-name: GetUser
+      tags:
+      - users
+      security:
+      - bearerAuth:
+        - partner
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/User'
+                - type: object
+                  required:
+                  - shops
+                  properties:
+                    shops:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/EntireShop'
+components:
+  schemas:
+    Address:
+      type: object
+      description: Address of the user's shop
+      required:
+      - address1
+      - city
+      - state
+      - zipCode
+      properties:
+        address1:
+          type: string
+          example: 1 Broadway
+        address2:
+          type:
+          - string
+          - 'null'
+          example: 14th Floor
+        city:
+          type: string
+          example: Cambridge
+        state:
+          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          example: MA
+        zipCode:
+          type: string
+          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
+          example: '02142'
+        country:
+          description: ISO 3166-1 alpha-2
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          default: US
+          example: US
+    BriefShop:
+      type: object
+      required:
+      - id
+      - name
+      - phone
+      - demo
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech ID of a shop.
+        name:
+          type: string
+          example: Mechanic Shop
+        phone:
+          type: string
+          example: (777) 777-7777 x111
+        cellphone:
+          type:
+          - string
+          - 'null'
+          example: (777) 777-7777 x111
+        demo:
+          type: boolean
+          example: false
+    User:
+      type: object
+      required:
+      - username
+      - email
+      - enabled
+      - lastLogin
+      - allowOrderEmails
+      - firstName
+      - lastName
+      - demo
+      properties:
+        username:
+          type: string
+          example: mechanic
+        email:
+          type: string
+          example: iron-man@gmail.com
+        enabled:
+          type: boolean
+          example: true
+          description: Shows if user is activated.
+        lastLogin:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Shows date and time of last user login. ISO 8601/RFC 3339, UTC
+        registrationDate:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Shows date of user registration.
+        allowOrderEmails:
+          type: boolean
+          example: true
+        firstName:
+          type: string
+          example: Iron
+        lastName:
+          type: string
+          example: Man
+        timeZone:
+          type:
+          - string
+          - 'null'
+          example: America/New_York
+        demo:
+          type: boolean
+          example: false
+    EntireShop:
+      allOf:
+      - $ref: '#/components/schemas/BriefShop'
+      - type: object
+        required:
+        - pickUpRadius
+        - shippingAddress
+        - billingAddress
+        properties:
+          pickUpRadius:
+            type: integer
+            minimum: 0
+            example: 25
+          otherBusinessName:
+            type:
+            - string
+            - 'null'
+          shippingAddress:
+            $ref: '#/components/schemas/Address'
+          billingAddress:
+            $ref: '#/components/schemas/Address'
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
+    perPage:
+      name: perPage
+      in: query
+      schema:
+        type: integer
+        enum:
+        - 10
+        - 25
+        - 50
+        - 100
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 50
+      description: 'Records per request. Default: 50'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

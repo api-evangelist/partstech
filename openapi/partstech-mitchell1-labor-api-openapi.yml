@@ -1,0 +1,372 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Mitchell1 Labor API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: mitchell1-labor
+  description: Labor
+  x-displayName: Labor
+paths:
+  /mitchell1/labor/groups:
+    post:
+      summary: Get Labor Groups
+      description: Returns list of Mitchell1 Labor Groups.
+      operationId: GetGroups
+      x-operation-name: QueryMitchell1LaborGroups
+      tags:
+      - mitchell1-labor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - m1VehicleId
+              properties:
+                m1VehicleId:
+                  type: string
+      responses:
+        '200':
+          description: List of Mitchell1 labor groups
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - groups
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: string
+  /mitchell1/labor/subgroups:
+    post:
+      summary: Get Labor SubGroups
+      description: Returns list of Mitchell1 Labor SubGroups.
+      operationId: GetSubGroups
+      x-operation-name: QueryMitchell1LaborSubgroups
+      tags:
+      - mitchell1-labor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - m1VehicleId
+              - group
+              properties:
+                m1VehicleId:
+                  type: string
+                group:
+                  type: string
+      responses:
+        '200':
+          description: List of Mitchell1 labor sub groups
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - subgroups
+                properties:
+                  subgroups:
+                    type: array
+                    items:
+                      type: string
+  /mitchell1/labor/procedures:
+    post:
+      summary: Get Labor Procedures Summary
+      description: Returns list of Mitchell1 Labor Procedures.
+      operationId: GetProceduresSummary
+      x-operation-name: QueryMitchell1LaborProcedures
+      tags:
+      - mitchell1-labor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - m1VehicleId
+              - group
+              - subgroup
+              properties:
+                m1VehicleId:
+                  type: string
+                group:
+                  type: string
+                subgroup:
+                  type: string
+      responses:
+        '200':
+          description: List of Mitchell1 labor procedures
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - proceduresSummaries
+                properties:
+                  proceduresSummaries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProcedureSummary'
+  /mitchell1/labor/search:
+    post:
+      summary: Get Labor Procedures Summary By Search
+      description: Returns list of Mitchell1 Labor Procedures by search string.
+      operationId: SearchProceduresSummary
+      x-operation-name: SearchMitchell1LaborProcedures
+      tags:
+      - mitchell1-labor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - m1VehicleId
+              - search
+              properties:
+                m1VehicleId:
+                  type: string
+                search:
+                  type:
+                  - string
+                  - 'null'
+      responses:
+        '200':
+          description: List of matching labor procedures
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - proceduresSummaries
+                properties:
+                  proceduresSummaries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProcedureSummary'
+  /mitchell1/labor/details:
+    post:
+      summary: Get Labor Details
+      description: Returns Labor Details for a given Labor Procedure.
+      operationId: GetProcedure
+      x-operation-name: QueryMitchell1LaborDetails
+      tags:
+      - mitchell1-labor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - m1VehicleId
+              - group
+              - subgroup
+              - component
+              - operation
+              properties:
+                m1VehicleId:
+                  type: string
+                group:
+                  type: string
+                subgroup:
+                  type: string
+                component:
+                  type: string
+                operation:
+                  type: string
+      responses:
+        '200':
+          description: Labor procedure detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - procedure
+                properties:
+                  procedure:
+                    $ref: '#/components/schemas/Procedure'
+components:
+  schemas:
+    ProcedureInformation:
+      type: object
+      properties:
+        component:
+          type: string
+          description: The component of the labor procedure.
+        operation:
+          type: string
+          description: The operation of the labor procedure.
+        skillLevel:
+          type: string
+          description: Technical skill level.
+        procedureNote:
+          type: string
+          description: A note about the labor procedure.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          description: List of different vehicle application items.
+    Item:
+      type: object
+      properties:
+        vehicleApplication:
+          type: string
+          description: Vehicle application information (such as submodel or engine displacement).
+        additionalApplication:
+          type: string
+          description: Additional application information (such as positions of features).
+        applicationNote:
+          type: string
+          description: A note about the application.
+        warrantyTime:
+          type: number
+          format: float
+          example: 0
+          description: Warranty Labor time provided by manufacturer.
+        standardTime:
+          type: number
+          format: float
+          example: 0
+          description: Standard labor time.
+        key:
+          type: string
+          description: Item hash key.
+    ApplicationGroup:
+      type: object
+      properties:
+        applicationGroupName:
+          type: string
+          description: Name of Application Group. Not all Application Groups will have a name.
+        procedureNote:
+          type: string
+          description: A note about the labor procedure. Nothing is returned, if there isn't a procedure note.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          description: List of different vehicle application items.
+        additionalProcedures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcedureInformation'
+          description: List of additionalProcedures.
+        combinationProcedures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcedureInformation'
+          description: List of combination labor procedures.
+    ProcedureSummary:
+      type: object
+      properties:
+        component:
+          type: string
+        operation:
+          type: string
+        group:
+          type: string
+        subgroup:
+          type: string
+    Procedure:
+      type: object
+      properties:
+        group:
+          type: string
+          description: The group the labor procedure in.
+        subgroup:
+          type: string
+          description: The subgroup the labor procedure in.
+        component:
+          type: string
+          description: The component of the labor procedure.
+        operation:
+          type: string
+          description: The operation of the labor procedure.
+        skillLevel:
+          type: string
+          description: Technical skill level. Nothing is returned, if there is no technician skill level information.
+        applicationGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationGroup'
+          description: Group of elements associated with different vehicle applications.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

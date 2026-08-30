@@ -1,0 +1,538 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Supplier Preferences API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: supplier_preferences
+  description: Supplier Preferences
+  x-displayName: Supplier Preferences
+paths:
+  /profile/shop/suppliers:
+    get:
+      summary: Get Supplier Preferences
+      operationId: getSupplierPreferences
+      x-operation-name: GetAllProfileShopSupplierPreferences
+      tags:
+      - supplier_preferences
+      security:
+      - bearerAuth:
+        - user
+      responses:
+        '200':
+          $ref: '#/components/responses/SupplierPreferences'
+    post:
+      summary: Add Supplier Preference
+      description: 'Add new supplier preference to the shop.
+
+
+        **Note** StoreId requirement depends on the `lockedStore` option of a supplier.
+
+
+        **Note** Not all suppliers requires credentials.
+
+
+        **Note** Required set of credentials depends on requested supplier.
+
+
+        **Note** You must send all set of required credentials or not send any of them at all.
+
+        '
+      operationId: addSupplierPreference
+      x-operation-name: CreateProfileShopSupplierPreference
+      tags:
+      - supplier_preferences
+      security:
+      - bearerAuth:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - supplierId
+              - priority
+              properties:
+                supplierId:
+                  description: PartsTech Id of a supplier.
+                  type: integer
+                storeId:
+                  description: PartsTech Id of a store.
+                  type:
+                  - integer
+                  - 'null'
+                credentials:
+                  $ref: '#/components/schemas/SupplierPreferenceCredentialsRequest'
+                priority:
+                  type: integer
+            examples:
+              AdvanceAutoParts:
+                description: Adds Advance Auto Parts Preference with empty values of credentials
+                value:
+                  supplierId: 2501
+                  priority: 1
+                  credentials:
+                  - name: customer
+                    value: null
+                  - name: username
+                    value: null
+                  - name: password
+                    value: null
+              MD:
+                description: Adds MD Preference (no required credentials)
+                value:
+                  supplierId: 15021
+                  storeId: 685
+                  priority: 1
+              AutoZone With Credentials:
+                description: Adds AutoZone Preference (with required credentials)
+                value:
+                  supplierId: 2501
+                  storeId: 705
+                  priority: 1
+                  credentials:
+                  - name: customerNumber
+                    value: some value
+              AutoZone:
+                description: Adds AutoZone Preference (with required credentials)
+                value:
+                  supplierId: 2501
+                  storeId: 705
+                  priority: 1
+              Fisher Auto Parts:
+                description: Adds Fisher Auto Parts Preference with empty values of credentials
+                value:
+                  supplierId: 15044
+                  storeId: 1163
+                  priority: 1
+                  credentials:
+                  - name: account
+                    value: null
+                  - name: username
+                    value: null
+                  - name: password
+                    value: null
+              WORLDPAC:
+                description: Adds WORLDPAC Preference with empty values of credentials
+                value:
+                  supplierId: 15061
+                  storeId: 699
+                  priority: 1
+                  credentials:
+                  - name: customerNumber
+                    value: null
+                  - name: password
+                    value: null
+      responses:
+        '204':
+          description: OK
+  /profile/shop/suppliers/{supplierPreferenceId}:
+    patch:
+      summary: Update Supplier Preference
+      description: 'Updates a supplier preference.
+
+
+        **Note** StoreID requirement depends on the `lockedStore` option of a supplier.
+
+
+        **Note** Not all suppliers requires credentials.
+
+
+        **Note** Required set of credentials depends on requested supplier.
+
+
+        **Note** You must send all set of required credentials or not send any of them at all.
+
+        '
+      operationId: updateSupplierPreference
+      x-operation-name: UpdateProfileShopSupplierPreference
+      tags:
+      - supplier_preferences
+      security:
+      - bearerAuth:
+        - user
+      parameters:
+      - name: supplierPreferenceId
+        in: path
+        required: true
+        schema:
+          type: integer
+          pattern: \d+
+        example: 13564
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - supplierId
+              - priority
+              properties:
+                storeId:
+                  description: PartsTech Id of a store.
+                  type:
+                  - integer
+                  - 'null'
+                credentials:
+                  $ref: '#/components/schemas/SupplierPreferenceCredentialsRequest'
+                priority:
+                  type: integer
+            examples:
+              AdvanceAutoParts:
+                description: Updating Advance Auto Parts Preference with empty values of credentials
+                value:
+                  priority: 1
+                  credentials:
+                  - name: customer
+                    value: null
+                  - name: username
+                    value: null
+                  - name: password
+                    value: null
+              MD:
+                description: Updating MD Preference (no required credentials)
+                value:
+                  storeId: 685
+                  priority: 1
+              AutoZone With Credentials:
+                description: Updating AutoZone Preference (with required credentials)
+                value:
+                  storeId: 705
+                  priority: 1
+                  credentials:
+                  - name: customerNumber
+                    value: some value
+              AutoZone:
+                description: Updating AutoZone Preference (without required credentials)
+                value:
+                  storeId: 705
+                  priority: 1
+              Fisher Auto Parts:
+                description: Updating Fisher Auto Parts Preference with empty values of credentials
+                value:
+                  storeId: 1163
+                  priority: 1
+                  credentials:
+                  - name: account
+                    value: null
+                  - name: username
+                    value: null
+                  - name: password
+                    value: null
+              WORLDPAC:
+                description: Updating WORLDPAC Preference with empty values of credentials
+                value:
+                  storeId: 699
+                  priority: 1
+                  credentials:
+                  - name: customerNumber
+                    value: null
+                  - name: password
+                    value: null
+      responses:
+        '204':
+          description: OK
+    delete:
+      summary: Remove Supplier Preference
+      description: 'Removes a supplier preference from the shop.
+
+        '
+      operationId: removeSupplierPreference
+      x-operation-name: DeleteProfileShopSupplierPreference
+      tags:
+      - supplier_preferences
+      security:
+      - bearerAuth:
+        - user
+      parameters:
+      - name: supplierPreferenceId
+        in: path
+        required: true
+        schema:
+          type: integer
+          pattern: \d+
+        example: 0
+      responses:
+        '204':
+          description: OK
+  /profile/shop/tire-suppliers:
+    get:
+      summary: Get Tire Supplier Preferences
+      operationId: getTireSupplierPreferences
+      x-operation-name: GetAllProfileShopTireSupplierPreferences
+      tags:
+      - supplier_preferences
+      security:
+      - bearerAuth:
+        - user
+      responses:
+        '200':
+          $ref: '#/components/responses/SupplierPreferences'
+components:
+  schemas:
+    SupplierPreferenceCredentialsRequest:
+      type: array
+      items:
+        type: object
+        description: Supplier preference credential request
+        required:
+        - name
+        - value
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    SupplierPreferenceCredentialsResponse:
+      type: object
+      description: Credential
+      required:
+      - label
+      - internalName
+      - value
+      - type
+      properties:
+        label:
+          type: string
+          description: User-friendly label for the credential.
+        internalName:
+          type: string
+          description: Internal name of the credential in Partstech.
+        value:
+          type: string
+        type:
+          type: string
+          description: Type of the credential. Text or Password.
+    PreferredStore:
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+            example: asdasdb
+  responses:
+    SupplierPreferences:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: array
+            minItems: 0
+            items:
+              type: object
+              required:
+              - id
+              - supplier
+              - store
+              - credentials
+              - status
+              - statusDescription
+              - priority
+              properties:
+                id:
+                  type: integer
+                supplier:
+                  $ref: '#/components/schemas/BriefSupplier'
+                store:
+                  $ref: '#/components/schemas/PreferredStore'
+                credentials:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SupplierPreferenceCredentialsResponse'
+                status:
+                  type: string
+                  enum:
+                  - Processing
+                  - Approved
+                  - Not Approved
+                  - Help Requested
+                  - Pending
+                  - Ready For Review
+                  - Supplier Approval Needed
+                statusDescription:
+                  type: string
+                priority:
+                  description: Maximum value depends on a user made a request
+                  type: integer
+                  minimum: 0
+                  maximum: 5
+          example:
+          - id: 1878
+            supplier:
+              id: 1458
+              name: Advance Auto Parts
+            store:
+              id: 1
+              name: 5904 - Springfield, MA
+              sellerId: ashdkjas
+            credentials:
+            - label: Customer Number
+              internalName: customer
+              value: value
+              type: text
+            - label: SMS Username
+              internalName: username
+              value: value
+              type: text
+            - label: SMS Password
+              internalName: password
+              value: value
+              type: password
+            status: Approved
+            statusDescription: Your configuration is complete.
+            priority: 1
+          - id: 8765
+            supplier:
+              id: 1458
+              name: Advance Auto Parts
+            credentials:
+            - label: Customer Number
+              internalName: customer
+              value: null
+              type: text
+            - label: SMS Username
+              internalName: username
+              value: null
+              type: text
+            - label: SMS Password
+              internalName: password
+              value: null
+              type: password
+            status: Processing
+            statusDescription: Your account information is being reviewed by PartsTech.
+            priority: 2
+          - id: 18765
+            supplier:
+              id: 2501
+              name: AutoZone
+            store:
+              id: 1121
+              name: 5254 - Waltham, MA
+              sellerId: null
+            credentials:
+            - label: Autozone PIN
+              internalName: customerNumber
+              value: value
+              type: text
+            status: Approved
+            statusDescription: Your configuration is complete.
+            priority: 3
+          - id: 87654
+            supplier:
+              id: 15021
+              name: Motor Distribution
+            store:
+              id: 63248
+              name: Bayshore, NY
+              sellerId: null
+            credentials: {}
+            status: Approved
+            statusDescription: Your configuration is complete.
+            priority: 4
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

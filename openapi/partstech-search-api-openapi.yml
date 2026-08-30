@@ -1,0 +1,1049 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Search API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: search
+  description: Search
+  x-displayName: Search
+paths:
+  /catalog/search:
+    post:
+      summary: Search Parts
+      deprecated: true
+      description: "**As of February 28th, 2026, this endpoint will no longer continue to work.**\n**Please contact [PartsTech-Partner-API@oeconnection.com](mailto:PartsTech-Partner-API@oeconnection.com) with any questions.**\n\nSearch Params:\n  - Search by Part Number\n  - Non-app Search - search by universal part types and attributes.\n\n    Use part types with application UNIVERSAL or UNIVERSAL_FITTED  (see [\"Get/Search Part Types\"](#operation/getPartTypes)).\n    Check and select required attributes for a part type before sending of search request (see [\"Get Part Type Attributes\"](#operation/getPartTypeAttributes)).\n  - Search by Vehicle - a mix of Vehicle identifier with auxilary param\n\nVehicle Identifiers:\n  - Vehicle params (year, make, model, etc)\n  - Partstech Vehicle ID\n  - VIN\n  - Plate with State\n\nAuxilary Params:\n  - Part Type IDs\n  - Keyword\n\nSee examples of requests.\n"
+      tags:
+      - search
+      operationId: searchParts
+      x-operation-name: QueryCatalogSearch
+      security:
+      - bearerAuth:
+        - user
+      parameters:
+      - $ref: '#/components/parameters/locale'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - searchParams
+              properties:
+                searchParams:
+                  oneOf:
+                  - $ref: '#/components/schemas/VehicleSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/VehicleSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PartsTechVehicleIdSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/VinSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/VinSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PlateSearchParamsByKeyword'
+                  - $ref: '#/components/schemas/PlateSearchParamsByPartTypes'
+                  - $ref: '#/components/schemas/PartNumberSearchParams'
+                  - $ref: '#/components/schemas/NonAppSearchParams'
+                filters:
+                  type: array
+                  minItems: 0
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      values:
+                        type: array
+                        minItems: 1
+                        items:
+                          oneOf:
+                          - type: integer
+                          - type: string
+                          - type: boolean
+                  example:
+                  - name: parts
+                    values:
+                    - 1688
+                    - 2172
+                  - name: WarrantyTime
+                    values:
+                    - 24 Months
+                  - name: manufacturers
+                    values:
+                    - 336
+            examples:
+              VehiclePartTypeSearch:
+                summary: Search by Vehicle and PartTypeIds
+                description: Make a search by Vehicle and PartTypeId. `searchParams` accepts only `vehicleParams` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2003
+                      makeId: 31
+                      modelId: 173
+                      subModelId: 20
+                      engineId: 177
+                      engineParams:
+                        engineVinId: 1
+                        engineDesignationId: 589
+                        engineVersionId: 3
+                        fuelTypeId: 5
+                        cylinderHeadTypeId: 6
+                    partTypeIds:
+                    - 5132
+                    - 10328
+                  filters:
+                  - name: parts
+                    values:
+                    - 5132
+                    - 10328
+                  - name: Bodytype
+                    values:
+                    - Sedan
+                  - name: manufacturers
+                    values:
+                    - 551
+              VehicleKeywordSearch:
+                summary: Search by Vehicle and Keyword
+                description: Make a search by Vehicle and PartTypeIds. `searchParams` accepts only `vehicleParams` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vehicleParams:
+                      yearId: 2014
+                      makeId: 21
+                      modelId: 104
+                      subModelId: 3512
+                      engineId: 2062
+                      engineParams:
+                        engineVinId: 31
+                        engineDesignationId: 1
+                        engineVersionId: 73
+                        fuelTypeId: 14
+                        cylinderHeadTypeId: 6
+                    keyword: Air Filter
+              VehicleIdPartTypeSearch:
+                summary: Search by PartsTech Vehicle ID and PartTypeIds
+                description: Make a search by PartsTech Vehicle ID and PartTypeIds. `searchParams` accepts only `vehicleId` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 287296
+                    partTypeIds:
+                    - 5132
+                    - 10328
+              VehicleIdKeywordSearch:
+                summary: Search by PartsTech Vehicle ID and Keyword
+                description: Make a search by PartsTech Vehicle ID and Keyword. `searchParams` accepts only `vehicleId` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vehicleId: 287296
+                    keyword: Air Filter
+              VinPartTypeSearch:
+                summary: Search by VIN and PartTypeIds
+                description: Make a search by VIN and PartTypeIds. `searchParams` accepts only `vin` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    partTypeIds:
+                    - 1005
+                    - 1006
+              VinKeywordSearch:
+                summary: Search by VIN and Keyword
+                description: Make a search by VIN and Keyword. `searchParams` accepts only `vin` and `keyword` parameters.
+                value:
+                  searchParams:
+                    vin: somevin
+                    keyword: Air Filter
+              PlatePartTypeSearch:
+                summary: Search by Plate and PartTypeIds
+                description: Make a search by Plate and PartTypeIds. `searchParams` accepts only `plate` and `partTypeIds` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    partTypeIds:
+                    - 1005
+                    - 1006
+              PlateKeywordSearch:
+                summary: Search by Plate and Keyword
+                description: Make a search by Plate and Keyword. `searchParams` accepts only `plate` and `keyword` parameters.
+                value:
+                  searchParams:
+                    plate:
+                      plate: Some Plate
+                      state: CT
+                    keyword: Air Filter
+              PartNumberSearch:
+                summary: Search by PartNumber
+                description: Make a search by PartNumber. `searchParams` accepts only `partNumber` parameter.
+                value:
+                  searchParams:
+                    partNumber:
+                    - 331
+              NonAppSearch:
+                summary: Search by universal part type
+                description: Make a search by Part type and required attribute.
+                value:
+                  searchParams:
+                    partTypeId: 11393
+                    attributes:
+                    - name: Color
+                      values:
+                      - Green
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - parts
+                - filters
+                properties:
+                  parts:
+                    type: array
+                    minItems: 0
+                    items:
+                      $ref: '#/components/schemas/CatalogPart'
+                  filters:
+                    type: array
+                    minItems: 0
+                    items:
+                      type: object
+                      required:
+                      - name
+                      - label
+                      - options
+                      properties:
+                        name:
+                          type: string
+                          description: A property used in the search request to identify a filter.
+                        label:
+                          type: string
+                          description: An user-friendly description.
+                        options:
+                          type: array
+                          description: Options for the filter.
+                          minItems: 1
+                          items:
+                            type: object
+                            required:
+                            - label
+                            - active
+                            - value
+                            properties:
+                              label:
+                                type: string
+                                description: An user-friendly description.
+                              count:
+                                type:
+                                - integer
+                                - 'null'
+                                description: A number of parts with this value.
+                              active:
+                                type: boolean
+                                description: Shows if this option affects current results.
+                              value:
+                                description: A property used in the search request to filter results.
+                                oneOf:
+                                - type: string
+                                - type: integer
+                                - type: boolean
+                    example:
+                    - name: WarrantyTime
+                      label: Warranty Time
+                      options:
+                      - label: 24 Months
+                        value: 24 Months
+                        active: true
+                        count: 2
+                    - name: manufacturers
+                      label: Manufacturer
+                      options:
+                      - label: Spectra Premium
+                        value: 336
+                        active: true
+                        count: 2
+                      - label: Spectra Radiators Size Codes
+                        value: 44452
+                        active: false
+                        count: 2
+                    - name: parts
+                      label: Part Type
+                      options:
+                      - label: Radiator
+                        value: 2172
+                        active: true
+                        count: 2
+                      - label: Drum Brake Shoe
+                        value: 1688
+                        active: true
+                        count: 0
+components:
+  schemas:
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    VinSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
+
+        It consists on Vehicle ID and Part Types or Keyword.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleId
+      properties:
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    CatalogPart:
+      type: object
+      required:
+      - partId
+      - partNumber
+      - partName
+      - brand
+      - partsTechCatalogURL
+      properties:
+        partId:
+          type: string
+          example: BBHK-24CA
+        partNumber:
+          type: string
+          example: 24CA
+        partName:
+          type: string
+          example: Bosch Windshield Wiper Blade
+        brand:
+          $ref: '#/components/schemas/Brand'
+        images:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            required:
+            - preview
+            - full
+            - medium
+            properties:
+              preview:
+                type: string
+              full:
+                type: string
+              medium:
+                type: string
+          example:
+          - preview: some_url
+            full: some_url
+            medium: some_url
+          - preview: some_url
+            full: some_url
+            medium: some_url
+        partsTechCatalogURL:
+          type: string
+          example: https://app.partstech.com/Bosch-Windshield-Wiper-Blade/details/BBHK-24CA?part_term=8852
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          example: 189326
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          example: 2009 BMW M3 Base 4.0L V8 DOHC S65B40A
+        attributes:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Attribute'
+          example:
+          - name: ItemQuantity
+            label: Item Qty/Size/Weight
+            value: 1 Each
+            type: Part
+          - name: Position
+            label: Position
+            value: Front Left
+            type: Part
+            dbInfo:
+              dbName: pcdb
+              tableName: positions
+              idFieldName: Position
+              idValue: PositionID
+          - name: Qty
+            label: Quantity per vehicle
+            value: 1
+            type: Both
+        variations:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            properties:
+              variationId:
+                type: string
+              notes:
+                type: array
+                minItems: 0
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                  example: {}
+              partName:
+                type:
+                - string
+                - 'null'
+                example: Bosch Windshield Wiper Blade
+              attributes:
+                type: array
+                minItems: 0
+                items:
+                  $ref: '#/components/schemas/Attribute'
+                example:
+                - name: ItemQuantity
+                  label: Item Qty/Size/Weight
+                  value: 1 Each
+                  type: Part
+          example:
+          - variationId: E1fHKgzpPvO
+            partName: Bosch Clear Advantage
+            notes: {}
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Sedan
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+          - variationId: 3fh7cCVNQOX
+            partName: Bosch Clear Advantage
+            notes:
+            - - Remove plastic guide from wiper arm
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Coupe
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+          - variationId: Iwf0SBSW8u4
+            partName: Bosch Clear Advantage
+            notes:
+            - - Remove plastic guide from wiper arm
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Convertible
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+        notes:
+          type: array
+          minItems: 0
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: string
+          example:
+          - - Optional Ceramic
+            - Includes Hardware Installation Kit
+        originalPart:
+          type:
+          - object
+          - 'null'
+          required:
+          - partNumber
+          properties:
+            typeOfOrigination:
+              type: string
+              enum:
+              - Alternate
+              - Interchange
+              - Supersession
+            partId:
+              type:
+              - string
+              - 'null'
+              example: ABCD-12345
+            partNumber:
+              type: string
+              example: 12345
+            brand:
+              $ref: '#/components/schemas/Brand'
+        rewards:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Rewards'
+          example:
+          - program: extra Loyalty Program
+            points: 10
+            bonusPoints: 1
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    PlateSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    PartsTechVehicleIdSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PartsTechVehicleIdSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    NonAppSearchParams:
+      description: 'Parameters for the search by universal part types.
+
+
+        Use part types with application `UNIVERSAL` or `UNIVERSAL_FITTED` (see ["Get/Search Part Types"](#operation/getPartTypes)).
+
+        Check and select `required` attributes for a part type before sending of search request (see ["Get Part Type Attributes"](#operation/getPartTypeAttributes)).
+
+        '
+      type: object
+      required:
+      - partTypeId
+      - attributes
+      properties:
+        partTypeId:
+          type: integer
+          description: The ID of a part type from the Autocare Association's PCdb.
+        attributes:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - values
+            properties:
+              name:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    PartTypesSearchParams:
+      type: object
+      required:
+      - partTypeIds
+      properties:
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    VehicleSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    KeywordSearchParams:
+      type: object
+      required:
+      - keyword
+      properties:
+        keyword:
+          type: string
+          example: Air Filter
+  parameters:
+    locale:
+      name: locale
+      in: query
+      description: Locale, default en_US
+      schema:
+        type:
+        - string
+        - 'null'
+        enum:
+        - en_US
+        - es_MX
+      required: false
+      example: null
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

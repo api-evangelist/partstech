@@ -1,0 +1,711 @@
+openapi: 3.2.0
+info:
+  version: 2.021.1
+  title: PartsTech Vcdb API
+  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  x-logo:
+    url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
+    altText: PartsTech logo
+servers:
+- url: https://api.partstech.com
+  description: Production server
+- url: https://api.beta.partstech.com
+  description: Beta server
+tags:
+- name: vcdb
+  description: Vehicle Configuration Database
+  x-displayName: Vehicle Configuration DB
+paths:
+  /taxonomy/vehicles/vin/{vin}:
+    get:
+      summary: Get Vehicle By VIN
+      description: 'Returns vehicle information by VIN
+
+        '
+      operationId: getVehicleByVin
+      x-operation-name: GetTaxonomyVehicleByVin
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - name: vin
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseVehicle'
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/{vehicleID}:
+    get:
+      summary: Get/Search Vehicles
+      description: 'Returns vehicle information by VehicleID
+
+        '
+      operationId: getVehicle
+      x-operation-name: GetTaxonomyVehicle
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - name: vehicleID
+        in: path
+        description: PartsTech's ID for a vehicle.
+        required: true
+        schema:
+          type: integer
+          pattern: \d{1,19}
+        example: 613426
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseVehicle'
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles:
+    get:
+      summary: List Vehicles
+      description: 'Returns available vehicles list.
+
+
+        `year`, `make`, `model` query parameters are **required**.
+
+
+        `engine`, `region` and `submodel` query parameters are optional.
+
+        '
+      operationId: listVehicles
+      x-operation-name: GetAllTaxonomyVehicles
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/make'
+      - $ref: '#/components/parameters/model'
+      - $ref: '#/components/parameters/submodel'
+      - $ref: '#/components/parameters/engine'
+      - $ref: '#/components/parameters/region'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseVehicle'
+                example:
+                - baseVehicleId: 140702
+                  yearId: 2017
+                  makeId: 21
+                  modelId: 105
+                  subModelId: 113
+                  engineId: 5486
+                  vehicleId: 613426
+                  vehicleName: 2017 Kia Rio LX 1.6L L4  DOHC G4FD
+                  engineParams:
+                    engineVinId: 1
+                    engineDesignationId: 4985
+                    engineVersionId: 3
+                    fuelTypeId: 5
+                    cylinderHeadTypeId: 6
+                  region: US
+                  regions:
+                  - US
+                - baseVehicleId: 140702
+                  yearId: 2017
+                  makeId: 21
+                  modelId: 105
+                  subModelId: 113
+                  engineId: 5486
+                  vehicleId: 473536
+                  vehicleName: 2017 Kia Rio LX 1.6L L4 vin 3 DOHC G4FD
+                  engineParams:
+                    engineVinId: 6
+                    engineDesignationId: 4985
+                    engineVersionId: 3
+                    fuelTypeId: 5
+                    cylinderHeadTypeId: 6
+                  region: null
+                  regions:
+                  - US
+                  - CA
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/years:
+    get:
+      summary: Get Years
+      description: 'Returns available years.
+
+
+        `make` and `model` query parameters are available and optional.
+
+        '
+      operationId: getYears
+      x-operation-name: GetAllTaxonomyVehiclesYears
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/make'
+      - $ref: '#/components/parameters/model'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                example:
+                - 2016
+                - 2017
+                - 2018
+                - 2019
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/makes:
+    get:
+      summary: Get Makes
+      description: 'Returns available makes.
+
+
+        `year`, `model`, `submodel` query parameters are available and optional.
+
+        '
+      operationId: getMakes
+      x-operation-name: GetAllTaxonomyVehiclesMakes
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/model'
+      - $ref: '#/components/parameters/submodel'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    makeName:
+                      type: string
+                    makeId:
+                      type: integer
+                example:
+                - makeName: Jaguar
+                  makeId: 20
+                - makeName: Kia
+                  makeId: 21
+                - makeName: Volvo
+                  makeId: 27
+                - makeName: BMW
+                  makeId: 31
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/models:
+    get:
+      summary: Get Models
+      description: 'Returns available models.
+
+
+        `year`, `make`, `submodel` query parameters are available.
+
+
+        One of `year` and `make` are **required**.
+
+        '
+      operationId: getModels
+      x-operation-name: GetAllTaxonomyVehiclesModels
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/make'
+      - $ref: '#/components/parameters/submodel'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    modelName:
+                      type: string
+                    modelId:
+                      type: integer
+                example:
+                - modelId: 104
+                  modelName: Optima
+                - modelId: 105
+                  modelName: Rio
+                - modelId: 106
+                  modelName: Sedona
+                - modelId: 108
+                  modelName: Sorento
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/submodels:
+    get:
+      summary: Get Submodels
+      description: 'Returns available submodels.
+
+
+        `year`, `make`, `model` and `engine` query parameters are available.
+
+
+        `year`, `make`, `model` are **required**.
+
+
+        `engine` and `region` are optional.
+
+        '
+      operationId: getSubmodels
+      x-operation-name: GetAllTaxonomyVehiclesSubmodels
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/make'
+      - $ref: '#/components/parameters/model'
+      - $ref: '#/components/parameters/engine'
+      - $ref: '#/components/parameters/region'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    submodelName:
+                      type: string
+                    submodelId:
+                      type: integer
+                    region:
+                      type:
+                      - string
+                      - 'null'
+                      description: ISO 3166-1 alpha-2
+                      deprecated: true
+                    regions:
+                      $ref: '#/components/schemas/Regions'
+                example:
+                - submodelId: 3
+                  submodelName: SX
+                  region: US
+                  regions:
+                  - US
+                - submodelId: 113
+                  submodelName: LX
+                  region: CA
+                  regions:
+                  - CA
+                - submodelId: 191
+                  submodelName: EX
+                  region: null
+                  regions:
+                  - US
+                  - CA
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+  /taxonomy/vehicles/engines:
+    get:
+      summary: Get Engines
+      description: 'Returns available engines with engine params.
+
+
+        `year`, `make`, `model` and `submodel` are **required**.
+
+
+        `region` is optional.
+
+        '
+      operationId: getEngines
+      x-operation-name: GetAllTaxonomyVehiclesEngines
+      tags:
+      - vcdb
+      security:
+      - bearerAuth:
+        - user
+        - partner
+      parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/make'
+      - $ref: '#/components/parameters/model'
+      - $ref: '#/components/parameters/submodel'
+      - $ref: '#/components/parameters/region'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    engineId:
+                      type: integer
+                    engineName:
+                      type: string
+                    engineParams:
+                      $ref: '#/components/schemas/EngineParams'
+                    region:
+                      type:
+                      - string
+                      - 'null'
+                      description: ISO 3166-1 alpha-2
+                      deprecated: true
+                    regions:
+                      $ref: '#/components/schemas/Regions'
+                example:
+                - engineId: 5486
+                  engineName: 1.6L L4 vin 3 DOHC G4FD
+                  engineParams:
+                    engineVinId: 6
+                    engineDesignationId: 4985
+                    engineVersionId: 3
+                    fuelTypeId: 5
+                    cylinderHeadTypeId: 6
+                  region: US
+                  regions:
+                  - US
+                - engineId: 5486
+                  engineName: 1.6L L4  DOHC G4FD
+                  engineParams:
+                    engineVinId: 1
+                    engineDesignationId: 4985
+                    engineVersionId: 3
+                    fuelTypeId: 5
+                    cylinderHeadTypeId: 6
+                  region: null
+                  regions:
+                  - US
+                  - CA
+          headers:
+            X-VCDB-VERSION:
+              schema:
+                type: string
+                format: date
+                description: Vehicle Configuration DB version
+                example: 2019-04-15
+components:
+  schemas:
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    Regions:
+      description: Array of country codes ISO 3166-1 alpha-2
+      type: array
+      items:
+        type: string
+      example:
+      - US
+      - CA
+    ResponseVehicle:
+      type:
+      - object
+      - 'null'
+      required:
+      - baseVehicleId
+      - yearId
+      - makeId
+      - makeName
+      - modelId
+      - modelName
+      - subModelId
+      - subModelName
+      - engineId
+      - vehicleName
+      - vehicleId
+      - engineParams
+      - engineName
+      - regions
+      - deprecated
+      properties:
+        baseVehicleId:
+          type: integer
+          example: 475485
+        yearId:
+          type: integer
+          example: 2012
+        makeId:
+          type: integer
+          example: 2
+        makeName:
+          type: string
+          example: Porsche
+        modelId:
+          type: integer
+          example: 10
+        modelName:
+          type: string
+          example: 911
+        subModelId:
+          type: integer
+          example: 55
+        subModelName:
+          type: string
+          example: Carrera
+        engineId:
+          type: integer
+          example: 2568
+        vehicleName:
+          type: string
+          example: 2012 Porsche 911 Carrera 3.6L H6  DOHC
+          description: Name of the vehicle selected for fitment during the PartsTech session. Typically consists of year, make, model, and engine.
+        vehicleId:
+          description: PartsTech's ID for a vehicle.
+          type: integer
+          example: 258298
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+        engineName:
+          type: string
+          example: 3.6L H6  DOHC
+        region:
+          type:
+          - string
+          - 'null'
+          description: ISO 3166-1 alpha-2
+          example: US
+          deprecated: true
+        regions:
+          $ref: '#/components/schemas/Regions'
+        deprecated:
+          type: boolean
+          example: false
+  parameters:
+    submodel:
+      name: submodel
+      in: query
+      description: Submodel ID
+      schema:
+        type:
+        - integer
+        - 'null'
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 113
+    region:
+      name: region
+      in: query
+      description: Region
+      schema:
+        type: string
+        enum:
+        - US
+        - CA
+        - MX
+      required: false
+      example: US
+    engine:
+      name: engine
+      in: query
+      description: Base Engine ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 5486
+    make:
+      name: make
+      in: query
+      description: Make ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 21
+    year:
+      name: year
+      in: query
+      description: Year
+      schema:
+        type: integer
+        minLength: 4
+        maxLength: 4
+        pattern: \d{4,4}
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2017
+    model:
+      name: model
+      in: query
+      description: Model ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 105
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Get access to data while protecting your account credentials.\nToken (a JWT token) are also a safer and more secure way to give you access.\n\nIt provides two ways of access:\n - `user` - Give an access to user methods.\n - `partner` - Give an acess to partner methods.\n\nTo use this way you need:\n1. Get an access token. See [\"Authentication and Access\"](#operation/getAcessToken).\n2. Add a header in the request\n```\nAuthorization: Bearer <accessToken>\n```\n3. Refresh tokens, when it expires, using `refreshToken`. See [\"Authentication and Access\"](#operation/refreshAccessToken). **Deprecated**.\nGenerate a new token after an expiration of previous instead of refreshing .\n"
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: credentials
+      description: "It is a deprecated way to get access to the methods, used only in the methods, that were in the previous version.\n\nIt provides two ways of an access:\n - `user` - Give access to user methods.\n - `partner` - Give acess to partner methods.\n\nTo use this way you need to add credentials in the request body, where it is allowed, in a next format:\n - for user methods:\n```\n\"credentials\": {\n    \"user\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    },\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n - for partner methods:\n```\n\"credentials\": {\n    \"partner\": {\n      \"id\": \"username\",\n      \"key\": \"APIKey\"\n    }\n}\n```\n\nFor example content of method [`Submit Cart`](#operation/submitCart) will be modified:\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\"\n}\n```\n\n```\n{\n  \"sessionId\": \"123asjkdhyr34234\",\n  \"credentials\": {\n    \"user\": {\n      \"id\": \"mechanic\",\n      \"key\": \"Mechanic's API key\"\n    },\n    \"partner\": {\n      \"id\": \"partner name\",\n      \"key\": \"partner's API key\"\n    }\n  }\n}\n```\n"
+x-tagGroups:
+- name: Authentication
+  tags:
+  - auth
+- name: Punchout
+  tags:
+  - punchout_quote
+- name: Cart
+  tags:
+  - punchout-cart
+  - session-cart
+  - callback-cart
+  - punchout-orders
+  - custom-cart
+- name: Catalog
+  tags:
+  - vin
+  - search
+  - quoting
+  - parts
+  - tires
+  - brands
+- name: Taxonomy
+  tags:
+  - pcdb
+  - vcdb
+  - jobs
+- name: Profile
+  tags:
+  - user
+  - shop
+  - supplier_preferences
+  - orders
+- name: Partner
+  tags:
+  - users
+  - shops
+  - ex-permissions
+  - partner-orders
+  - auto-connect
+- name: Others
+  tags:
+  - suppliers
+  - local-inventory
+- name: Motor Taxonomy
+  tags:
+  - motor-labor
+  - motor-maintenance-schedules
+  - motor-fluids
+  - motor-specifications
+- name: Mitchell1 Taxonomy
+  tags:
+  - mitchell1
+  - mitchell1-labor

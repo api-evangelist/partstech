@@ -61,6 +61,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Authentication
+  tags_raw:
   - auth
   properties:
   - type: OpenAPI
@@ -117,6 +119,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Brands
+  tags_raw:
   - brands
   properties:
   - type: OpenAPI
@@ -229,6 +233,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Job
+  tags_raw:
   - jobs
   properties:
   - type: OpenAPI
@@ -453,6 +459,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Order
+  tags_raw:
   - orders
   properties:
   - type: OpenAPI
@@ -509,6 +517,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Parts
+  tags_raw:
   - parts
   properties:
   - type: OpenAPI
@@ -620,7 +630,8 @@ apis:
   description: Quote Methods
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
-  tags:
+  tags: []
+  tags_raw:
   - punchout_quote
   properties:
   - type: OpenAPI
@@ -649,6 +660,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Quoting
+  tags_raw:
   - quoting
   properties:
   - type: OpenAPI
@@ -677,6 +690,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Search
+  tags_raw:
   - search
   properties:
   - type: OpenAPI
@@ -733,6 +748,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Shop
+  tags_raw:
   - shop
   properties:
   - type: OpenAPI
@@ -761,6 +778,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Shops
+  tags_raw:
   - shops
   properties:
   - type: OpenAPI
@@ -788,7 +807,8 @@ apis:
   description: Supplier Preferences
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
-  tags:
+  tags: []
+  tags_raw:
   - supplier_preferences
   properties:
   - type: OpenAPI
@@ -817,6 +837,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Suppliers
+  tags_raw:
   - suppliers
   properties:
   - type: OpenAPI
@@ -845,6 +867,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - Tires
+  tags_raw:
   - tires
   properties:
   - type: OpenAPI
@@ -873,6 +897,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - User
+  tags_raw:
   - user
   properties:
   - type: OpenAPI
@@ -901,6 +927,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - User
+  tags_raw:
   - users
   properties:
   - type: OpenAPI
@@ -957,6 +985,8 @@ apis:
   humanURL: https://api-docs.partstech.com/openapi.yaml
   baseURL: https://api.partstech.com
   tags:
+  - VIN
+  tags_raw:
   - vin
   properties:
   - type: OpenAPI

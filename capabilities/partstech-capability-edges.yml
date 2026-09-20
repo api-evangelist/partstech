@@ -1,0 +1,158 @@
+slug: partstech
+provider: PartsTech
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Transportation & Logistics
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 13
+edges:
+- tag: custom-cart
+  spec_file: partstech-custom-cart-api-openapi.yml
+  capability_id: BC-500.30
+  capability_id_l1: BC-500
+  capability_name: Purchase Order Management
+  confidence: 0.75
+  evidence: POST /punchout/cart/custom/create Create Custom Cart; POST /punchout/cart/custom/order submitItems
+    Order Custom Cart; POST /punchout/cart/custom/availability Check Custom Cart Availability
+  reason: Creates a purchasing cart, checks supplier availability and submits the order to suppliers —
+    punchout purchase order creation and execution for a repair shop buying parts.
+- tag: orders
+  spec_file: partstech-orders-api-openapi.yml
+  capability_id: BC-500.30
+  capability_id_l1: BC-500
+  capability_name: Purchase Order Management
+  confidence: 0.75
+  evidence: GET /orders  getOrders  Search Orders; GET /orders/{orderId}  Get Order; schemas Order, PurchasedPart,
+    OrderStore, BriefSupplier
+  reason: Operations retrieve parts purchase orders placed by a shop with suppliers, including purchased
+    parts, prices and supplier/store. That is buy-side purchase order management; sub-capability chosen
+    as PO Management since the surface is order records rather than broader P2P workflow.
+- tag: supplier_preferences
+  spec_file: partstech-supplier-preferences-api-openapi.yml
+  capability_id: BC-510
+  capability_id_l1: BC-510
+  capability_name: Supplier Management
+  confidence: 0.75
+  evidence: POST /profile/shop/suppliers  addSupplierPreference  Add Supplier Preference; schemas SupplierPreferenceCredentialsRequest,
+    PreferredStore
+  reason: Managing which suppliers and stores a shop is enabled with, including supplier account credentials,
+    is supplier relationship/onboarding administration. L1 Supplier Management; evidence does not clearly
+    pick between onboarding and relationship sub-capabilities.
+  recovered_from: sweep-20260829T005356Z-edges.json
+- tag: partner-orders
+  spec_file: partstech-partner-orders-api-openapi.yml
+  capability_id: BC-500.30
+  capability_id_l1: BC-500
+  capability_name: Purchase Order Management
+  confidence: 0.72
+  evidence: GET /partner/orders  getOrdersByPartner  Search Orders; schemas Order, PurchasedPart, BriefShop,
+    BriefSupplier
+  reason: Same purchase-order retrieval surface exposed to an integration partner across shops. Still
+    buy-side parts purchase order records; the partner scoping is an access dimension, not a different
+    capability.
+- tag: punchout-cart
+  spec_file: partstech-punchout-cart-api-openapi.yml
+  capability_id: BC-500.40
+  capability_id_l1: BC-500
+  capability_name: Procure-to-Pay Operations Management
+  confidence: 0.72
+  evidence: POST /punchout/cart/create  Create Cart; POST /punchout/cart/add-part  Add Part; POST /punchout/cart/remove-parts  Remove
+    Parts; schema PunchoutOrder
+  reason: Punchout cart build-up (create/update cart, add and remove parts) is the requisitioning step
+    of a procure-to-pay flow between a shop's system and supplier catalogs, hence P2P operations rather
+    than PO record management.
+- tag: callback-cart
+  spec_file: partstech-callback-cart-api-openapi.yml
+  capability_id: BC-500
+  capability_id_l1: BC-500
+  capability_name: Procurement Management
+  confidence: 0.7
+  evidence: POST /our-callback  Cart Callback; POST /tire-quote-callback  Tire Quote Callback; schemas
+    PunchoutOrder, PunchoutPurchasedOrder, ItemizedQuote, OrderStore
+  reason: Punchout cart and quote callbacks returning purchased-order payloads for a parts procurement
+    workflow — a procurement/purchasing surface. Delivery is via webhook callbacks, so the specific sub-capability
+    (PO vs P2P operations) is not pinned down; L1 only.
+  recovered_from: sweep-20260829T005356Z-edges.json
+- tag: local-inventory
+  spec_file: partstech-local-inventory-api-openapi.yml
+  capability_id: BC-530
+  capability_id_l1: BC-530
+  capability_name: Inventory Management
+  confidence: 0.7
+  evidence: POST /local-inventory replaceLocalInventory Replace local inventory; PUT /local-inventory
+    updateLocalInventory Update local inventory; GET /local-inventory/health/summary localInventoryMappingReportSummary
+  reason: Maintains and searches the shop's own on-hand parts inventory records, including mapping-quality
+    reports. Clearly stock record management; the evidence does not single out a specific sub-capability
+    (levels vs. accuracy).
+- tag: punchout-orders
+  spec_file: partstech-punchout-orders-api-openapi.yml
+  capability_id: BC-500.30
+  capability_id_l1: BC-500
+  capability_name: Purchase Order Management
+  confidence: 0.7
+  evidence: POST /punchout/orders  getPunchoutOrders  Get orders by session; schemas Order, PurchasedPart,
+    PaidOrderStore
+  reason: Returns the orders resulting from a punchout session, with purchased parts and paying store
+    — retrieval of placed supplier purchase orders. Session scoping is integration plumbing; the business
+    object is the purchase order.
+  recovered_from: sweep-20260829T005356Z-edges.json
+- tag: punchout_quote
+  spec_file: partstech-punchout-quote-api-openapi.yml
+  capability_id: BC-500
+  capability_id_l1: BC-500
+  capability_name: Procurement Management
+  confidence: 0.7
+  evidence: POST /punchout/quote/create  createQuote  Create quote; POST /punchout/quote/stock-order  createStockOrderQuote  Create
+    Stock Order Quote
+  reason: 'Punchout quoting for a repair shop buying parts from distributors is buy-side procurement:
+    quotes are raised against supplier catalogues within a punchout session. Maps to Procurement Management
+    at L1; evidence does not cleanly separate sourcing/RFx from P2P operations, so no L2.'
+  recovered_from: sweep-20260829T005356Z-edges.json
+- tag: quoting
+  spec_file: partstech-quoting-api-openapi.yml
+  capability_id: BC-500
+  capability_id_l1: BC-500
+  capability_name: Procurement Management
+  confidence: 0.7
+  evidence: POST /catalog/quote  requestQuote  Request Quote; POST /catalog/line-card-search  lineCardSearch  Search
+    by store using line card
+  reason: Requesting priced/available quotes from supplier stores for parts is buy-side procurement quoting
+    (schemas QuotedPart, CatalogPart, DeliveryNote). L1 Procurement Management; ambiguous between sourcing
+    and P2P operations so L2 withheld.
+  recovered_from: sweep-20260829T005356Z-edges.json
+- tag: session-cart
+  spec_file: partstech-session-cart-api-openapi.yml
+  capability_id: BC-500.40
+  capability_id_l1: BC-500
+  capability_name: Procure-to-Pay Operations Management
+  confidence: 0.7
+  evidence: POST /punchout/cart/submit  Submit Cart; POST /punchout/cart/availability  Check Cart Availability;
+    schema PunchoutPurchasedOrder
+  reason: Submits the cart for purchase and checks supplier availability, i.e. execution of the requisition-to-order
+    step in procure-to-pay operations.
+- tag: user
+  spec_file: partstech-user-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.7
+  evidence: GET /profile profile Get User Profile; POST /profile/reset-password resetPassword Reset User
+    Password
+  reason: Self-service account profile maintenance and credential reset are identity and access administration,
+    not an automotive-parts business capability.
+- tag: users
+  spec_file: partstech-users-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.7
+  evidence: POST /users registerUser Register User; GET /users/{username} getUserByUsername Get User
+  reason: User account registration and lookup within a shop is user provisioning/identity administration;
+    no HR or customer-lifecycle semantics are present in the operations.

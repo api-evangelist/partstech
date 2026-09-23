@@ -2,7 +2,10 @@ openapi: 3.2.0
 info:
   version: 2.021.1
   title: PartsTech Auth API
-  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  description: '# Rate Limiting
+
+
+    Requests can be limited by user requests, by private partner requests and by all requests with partner''s credentials.'
   x-logo:
     url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
     altText: PartsTech logo
@@ -12,28 +15,39 @@ servers:
 - url: https://api.beta.partstech.com
   description: Beta server
 tags:
-- name: auth
+- name: Auth
   description: 'A valid JSON Web Token (JWT) is required to access API methods. A JWT access token must be included in the authorization header of each request in the following Bearer schema:
 
     ```
 
-    Authorization: Bearer <accessToken>
+    Authorization: Bearer
 
     ```
 
-    Use the Get Access method to get a valid access token. Each access token expires after 60 minutes.
-
-    '
+    Use the Get Access method to get a valid access token. Each access token expires after 60 minutes.'
   x-displayName: Authentication and Access
 paths:
   /oauth/access:
     post:
       summary: Get Access
-      description: "Generates and returns a valid access token to use in request headers for access to methods.\n\nEach method requires either `user` or `partner` access type for authorization. The required access type for a given method can be viewed in the Authorizations section of each method's documentation.\n - To get a valid `accessToken` for methods that require `user` access type, provide `UserCredentials` and the value `user` for `accessType` in the request. For punchout integrations, all Punchout and Cart methods require `user` access type.\n - To get a valid `accessToken` for methods that require `partner` access type, provide `PartnerCredentials` and the value `partner` for `accessType` in the request.\n\nCheck out the Request Body Schema below to view what user and partner information is required in the `UserCredentials` and `PartnerCredentials` objects.\n\nThe response contains a valid `accessToken` that must be included in the authorization header of requests to access other methods. The authorization header format is ```Authorization: Bearer <accessToken>```\n"
+      description: 'Generates and returns a valid access token to use in request headers for access to methods.
+
+
+        Each method requires either `user` or `partner` access type for authorization. The required access type for a given method can be viewed in the Authorizations section of each method''s documentation.
+
+        - To get a valid `accessToken` for methods that require `user` access type, provide `UserCredentials` and the value `user` for `accessType` in the request. For punchout integrations, all Punchout and Cart methods require `user` access type.
+
+        - To get a valid `accessToken` for methods that require `partner` access type, provide `PartnerCredentials` and the value `partner` for `accessType` in the request.
+
+
+        Check out the Request Body Schema below to view what user and partner information is required in the `UserCredentials` and `PartnerCredentials` objects.
+
+
+        The response contains a valid `accessToken` that must be included in the authorization header of requests to access other methods. The authorization header format is ```Authorization: Bearer ```'
       operationId: getAcessToken
       x-operation-name: CreateAccessToken
       tags:
-      - auth
+      - Auth
       requestBody:
         content:
           application/json:
@@ -74,13 +88,11 @@ paths:
       deprecated: true
       description: 'Refresh an access token.
 
-        A response is the same to [`/oauth/access`](#operation/getAcessToken)
-
-        '
+        A response is the same to `/oauth/access`'
       operationId: refreshAccessToken
       x-operation-name: RefreshAccessToken
       tags:
-      - auth
+      - Auth
       requestBody:
         content:
           application/json:
@@ -100,6 +112,33 @@ paths:
           $ref: '#/components/responses/InvalidToken'
 components:
   responses:
+    InvalidToken:
+      description: Invalid Token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                title: Error details
+                type: object
+                required:
+                - code
+                - message
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - InvalidToken
+                    - ExpiredToken
+                  message:
+                    type: string
+            example:
+              error:
+                code: InvalidToken
+                message: Invalid token was provided
     InternalServerError:
       description: Internal Server Error.
       content:
@@ -167,72 +206,6 @@ components:
                 error:
                   code: IncorrectMode
                   message: Incorrect user for test mode
-    Tokens:
-      description: OK
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - tokenType
-            - accessToken
-            - expiresIn
-            - partner
-            properties:
-              tokenType:
-                type: string
-                enum:
-                - bearer
-              accessToken:
-                type: string
-                description: A valid JSON Web Token
-                example: some JWT token
-              refreshToken:
-                type:
-                - string
-                - 'null'
-                deprecated: true
-                example: some JWT token
-              expiresIn:
-                type: integer
-                format: int64
-                description: Time until `accessToken` expires, 60 minutes.
-                example: 10947234663
-              username:
-                type: string
-                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
-                example: partstech_user
-              partner:
-                type: string
-                description: The Partner Id of the partner provided in the request.
-                example: partstech_partner
-    InvalidToken:
-      description: Invalid Token.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                title: Error details
-                type: object
-                required:
-                - code
-                - message
-                properties:
-                  code:
-                    type: string
-                    enum:
-                    - InvalidToken
-                    - ExpiredToken
-                  message:
-                    type: string
-            example:
-              error:
-                code: InvalidToken
-                message: Invalid token was provided
     AuthenticationFailed:
       description: Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token.
       content:
@@ -274,7 +247,66 @@ components:
                 error:
                   code: PartnerAuthenticationFailed
                   message: Incorrect partner id or partner key
+    Tokens:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tokenType
+            - accessToken
+            - expiresIn
+            - partner
+            properties:
+              tokenType:
+                type: string
+                enum:
+                - bearer
+              accessToken:
+                type: string
+                description: A valid JSON Web Token
+                example: some JWT token
+              refreshToken:
+                type:
+                - string
+                - 'null'
+                deprecated: true
+                example: some JWT token
+              expiresIn:
+                type: integer
+                format: int64
+                description: Time until `accessToken` expires, 60 minutes.
+                example: 10947234663
+              username:
+                type: string
+                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
+                example: partstech_user
+              partner:
+                type: string
+                description: The Partner Id of the partner provided in the request.
+                example: partstech_partner
   schemas:
+    InvalidRequestError:
+      description: Malformed request. The request body is not parse-able or with invalid content.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        validationErrors:
+          type: array
+          items:
+            type: string
+      example:
+        error:
+          code: InvalidRequestSyntax
+          message: Cannot parse request. Invalid data format
+        validationErrors:
+        - credentials.user.key - This value should not be blank.
+        - credentials.user.id - This value should be of type string.
+        - credentials.partner - This value should not be blank.
     Error:
       title: Error Definition
       type: object
@@ -308,38 +340,6 @@ components:
         partner:
           id: partstech_partner
           key: Partner API key
-    InvalidRequestError:
-      description: Malformed request. The request body is not parse-able or with invalid content.
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          $ref: '#/components/schemas/Error'
-        validationErrors:
-          type: array
-          items:
-            type: string
-      example:
-        error:
-          code: InvalidRequestSyntax
-          message: Cannot parse request. Invalid data format
-        validationErrors:
-        - credentials.user.key - This value should not be blank.
-        - credentials.user.id - This value should be of type string.
-        - credentials.partner - This value should not be blank.
-    PartnerCredentials:
-      type: object
-      description: Partner Auth Credentials
-      required:
-      - partner
-      properties:
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        partner:
-          id: partstech_partner
-          key: Partner API key
     IdentityKey:
       type: object
       description: User or Partner ID and API Key
@@ -355,6 +355,18 @@ components:
           type: string
           description: User or Partner API key
           example: APIkey
+    PartnerCredentials:
+      type: object
+      description: Partner Auth Credentials
+      required:
+      - partner
+      properties:
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        partner:
+          id: partstech_partner
+          key: Partner API key
   securitySchemes:
     bearerAuth:
       type: http

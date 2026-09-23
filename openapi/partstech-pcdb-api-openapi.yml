@@ -2,7 +2,10 @@ openapi: 3.2.0
 info:
   version: 2.021.1
   title: PartsTech Pcdb API
-  description: "\n# Rate Limiting\n\nRequests can be limited by user requests, by private partner requests and by all requests with partner's credentials.\nIt has several time intervals:\n  - *Per day* restricts count of requests made in one day.\n  - *Requests per second* restricts count of requests made in one second.\n  - *Concurrent requests* restricts count of parallel requests.\n  - *Sliding 15 minutes* restricts count of requests made in last 15 minutes.\n\n**Note**: Every method has own separate sets of the limits.\n\n## Headers\nUse the HTTP headers in order to understand where the application is at for a given rate limit, on the method that was just utilized.\nThe HTTP header is returned only for one general limit or for limit that user reached.\n\n\n*Headers*\n  - the rate limit ceiling for that given endpoint:\n  ```\n  x-rate-limit-limit: 1000\n  ```\n  - the number of requests left:\n  ```\n  x-rate-limit-remaining: 570\n  ```\n  - the remaining window before the rate limit resets, in UTC [epoch seconds](https://en.wikipedia.org/wiki/Unix_time):\n  ```\n  x-rate-limit-reset: 1552003200\n  ```\n\nWhen an application exceeds the rate limit for a given standard API endpoint,\nthe API will return a HTTP 429 “Too Many Requests” response code, and the following error will be returned in the response body:\n```\n{\n  \"error\": {\n    \"code\": \"TooManyRequests\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Pagination\n\nWhen you call an API method to retrieve information, it can be returned to you in portions.\nCheck out more detail below on pagination in API methods, including how to use them and which methods follow the pattern.\n\nAPI methods that supports pagination will return the `Link` header. It will include available urls of `first`, `last`, `previous` and `next` pages.\n\n```\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"first\"\nLink: <https://api.partstech.com/purchases?page=1>; rel=\"previous\"\nLink: <https://api.partstech.com/purchases?page=3>; rel=\"next\"\nLink: <https://api.partstech.com/purchases?page=142>; rel=\"last\"\n```\n\n# MOTOR Compliance Requirements\n\nAll MOTOR-powered endpoints (Labor, Maintenance Schedules, Fluids, and Specifications) return a `Link` header\ncontaining the URL to MOTOR's OEM Compliance Requirements documentation.\n\nThe header follows the [RFC 8288 (Web Linking)](https://tools.ietf.org/html/rfc8288) format:\n\n```\nLink: <https://www.motor.com/oem-compliance-requirements/>; rel=\"compliance\"\n```\n\n# Errors\n\nThe API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:\n\n```\n{\n  \"error\": {\n    \"code\": \"InternalErrorCode\",\n    \"message\": \"Some description\"\n  }\n}\n```\n\n# Error Responses\nSome default error responses used in the API.\n\nHttp Code  | Explanation | Content Type | Used error codes\n----------------|-------------|------------------|---------\n400 | Bad Request. The request was unacceptable. | `application/json` | `InvalidRequestSyntax`\n401 | Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token. | `application/json` | `InvalidToken`, `UserAuthenticationFailed`, `PartnerAuthenticationFailed`\n402 | Request Failed. The parameters were valid but the request failed. | `application/json` | Different codes, depend on method.\n403 | Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues. | `application/json` | `IncorrectMode`, `DisabledApiUsage`, `UserIsNotActivated`, `HaveNotPermission`, `NotAvailableMethod`\n404 | Some data in the request is not found. Or incorrect url was used. | `application/json`, `text/html`, no content | `NotFound`\n405 | Method not allowed. | `application/json`, `text/html`, no content |\n406 | Unacceptable content type. Client sent an accepts header for a content type which does not exist on the server. | No content |\n409 | Locked. One of the another operations that is in progress blocks this method call. | `application/json` | `LockedSession`\n429 | Too Many Requests | `application/json` | `TooManyRequests`\n432 | Integration Error | `application/json` |\n500 | Internal Server Error. (This is rare.) | `application/json` | `InternalError`\n501 | Not Implemented | `application/json` | `MethodNotImplemented`\n503 | The backend server is not available. (This is rare.) | No content |\n"
+  description: '# Rate Limiting
+
+
+    Requests can be limited by user requests, by private partner requests and by all requests with partner''s credentials.'
   x-logo:
     url: https://partstech.com/wp-content/uploads/2025/03/PartsTech_OEC-compnay_logo.svg
     altText: PartsTech logo
@@ -19,9 +22,7 @@ paths:
   /taxonomy/categories:
     get:
       summary: Get/Search Categories
-      description: 'Returns categories. Results can be filtered by `name`, provided in query.
-
-        '
+      description: Returns categories. Results can be filtered by `name`, provided in query.
       operationId: getCategories
       x-operation-name: GetAllTaxonomyCategories
       tags:
@@ -72,9 +73,7 @@ paths:
   /taxonomy/tree/{categoryId}:
     get:
       summary: Get part taxonomy by categoryId
-      description: 'Returns category with subcategory - part type tree.
-
-        '
+      description: Returns category with subcategory - part type tree.
       operationId: GetPartTaxonomyByCategoryId
       x-operation-name: GetPartTaxonomyByCategoryId
       tags:
@@ -137,9 +136,7 @@ paths:
   /taxonomy/subcategories:
     get:
       summary: Get/Search Subcategories
-      description: 'Returns categories. Results can be filtered by `name` and `category`, provided in query.
-
-        '
+      description: Returns categories. Results can be filtered by `name` and `category`, provided in query.
       operationId: getSubcategories
       x-operation-name: GetAllTaxonomySubcategories
       tags:
@@ -200,9 +197,7 @@ paths:
       description: 'Returns part types. Results can be filtered by `name`, `category` and `subcategory`, provided in query.
 
 
-        **Note** Results limited by 10000 records. Use filters to get needed records.
-
-        '
+        **Note** Results limited by 10000 records. Use filters to get needed records.'
       operationId: getPartTypes
       x-operation-name: GetAllTaxonomyPartTypes
       tags:
@@ -310,9 +305,7 @@ paths:
       description: 'Returns part type attributes.
 
 
-        Required attributes must be provided with selected value in the search by part type (UNIVERSAL, UNIVERSAL_FITTED) without vehicle params.
-
-        '
+        Required attributes must be provided with selected value in the search by part type (UNIVERSAL, UNIVERSAL_FITTED) without vehicle params.'
       operationId: getPartTypeAttributes
       x-operation-name: GetAllTaxonomyPartTypeAttributes
       tags:
@@ -339,22 +332,42 @@ paths:
                 items:
                   $ref: '#/components/schemas/ResponsePartTypeAttribute'
 components:
+  parameters:
+    perPage:
+      name: perPage
+      in: query
+      schema:
+        type: integer
+        enum:
+        - 10
+        - 25
+        - 50
+        - 100
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 50
+      description: 'Records per request. Default: 50'
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
+    locale:
+      name: locale
+      in: query
+      description: Locale, default en_US
+      schema:
+        type:
+        - string
+        - 'null'
+        enum:
+        - en_US
+        - es_MX
+      required: false
+      example: null
   schemas:
-    ResponsePartTypeAttribute:
-      type: object
-      required:
-      - name
-      - values
-      - required
-      properties:
-        name:
-          type: string
-        values:
-          type: array
-          items:
-            type: string
-        required:
-          type: boolean
     ResponsePartType:
       type: object
       required:
@@ -393,41 +406,21 @@ components:
         partTypeName: Voltage Regulator Screw
         description: Mounting screw for the voltage regulator.
         application: FITTED
-  parameters:
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
-    perPage:
-      name: perPage
-      in: query
-      schema:
-        type: integer
-        enum:
-        - 10
-        - 25
-        - 50
-        - 100
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 50
-      description: 'Records per request. Default: 50'
-    locale:
-      name: locale
-      in: query
-      description: Locale, default en_US
-      schema:
-        type:
-        - string
-        - 'null'
-        enum:
-        - en_US
-        - es_MX
-      required: false
-      example: null
+    ResponsePartTypeAttribute:
+      type: object
+      required:
+      - name
+      - values
+      - required
+      properties:
+        name:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+        required:
+          type: boolean
   securitySchemes:
     bearerAuth:
       type: http

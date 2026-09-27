@@ -284,16 +284,6 @@ paths:
                 $ref: '#/components/schemas/Store'
 components:
   schemas:
-    ShippingMethod:
-      type: string
-      enum:
-      - USPS
-      - UPS
-      - FedEx
-      example:
-      - USPS
-      - UPS
-      - FedEx
     Store:
       allOf:
       - $ref: '#/components/schemas/BriefStore'
@@ -326,7 +316,7 @@ components:
               $ref: '#/components/schemas/ShippingMethod'
           supplier:
             $ref: '#/components/schemas/BriefSupplierWithCredentials'
-    BriefSupplier:
+    BriefStore:
       type: object
       required:
       - id
@@ -334,12 +324,22 @@ components:
       properties:
         id:
           type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
+          example: 1
+          description: PartsTech's ID for a store.
         name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    ShippingMethod:
+      type: string
+      enum:
+      - USPS
+      - UPS
+      - FedEx
+      example:
+      - USPS
+      - UPS
+      - FedEx
     SupplierPreferenceCredentialsFormat:
       description: '**Note** that different suppliers have a different format of the credentials.
 
@@ -403,20 +403,6 @@ components:
             description: 'If true: It will try to assign itself a store to the supplier preference of a shop
 
               '
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
     Address:
       type: object
       description: Address of the user's shop
@@ -456,6 +442,20 @@ components:
           pattern: \w{2,2}
           default: US
           example: US
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
   parameters:
     perPage:
       name: perPage

@@ -110,53 +110,6 @@ paths:
                         $ref: '#/components/schemas/User'
 components:
   schemas:
-    BriefShop:
-      type: object
-      required:
-      - id
-      - name
-      - phone
-      - demo
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech ID of a shop.
-        name:
-          type: string
-          example: Mechanic Shop
-        phone:
-          type: string
-          example: (777) 777-7777 x111
-        cellphone:
-          type:
-          - string
-          - 'null'
-          example: (777) 777-7777 x111
-        demo:
-          type: boolean
-          example: false
-    EntireShop:
-      allOf:
-      - $ref: '#/components/schemas/BriefShop'
-      - type: object
-        required:
-        - pickUpRadius
-        - shippingAddress
-        - billingAddress
-        properties:
-          pickUpRadius:
-            type: integer
-            minimum: 0
-            example: 25
-          otherBusinessName:
-            type:
-            - string
-            - 'null'
-          shippingAddress:
-            $ref: '#/components/schemas/Address'
-          billingAddress:
-            $ref: '#/components/schemas/Address'
     User:
       type: object
       required:
@@ -208,6 +161,53 @@ components:
         demo:
           type: boolean
           example: false
+    BriefShop:
+      type: object
+      required:
+      - id
+      - name
+      - phone
+      - demo
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech ID of a shop.
+        name:
+          type: string
+          example: Mechanic Shop
+        phone:
+          type: string
+          example: (777) 777-7777 x111
+        cellphone:
+          type:
+          - string
+          - 'null'
+          example: (777) 777-7777 x111
+        demo:
+          type: boolean
+          example: false
+    EntireShop:
+      allOf:
+      - $ref: '#/components/schemas/BriefShop'
+      - type: object
+        required:
+        - pickUpRadius
+        - shippingAddress
+        - billingAddress
+        properties:
+          pickUpRadius:
+            type: integer
+            minimum: 0
+            example: 25
+          otherBusinessName:
+            type:
+            - string
+            - 'null'
+          shippingAddress:
+            $ref: '#/components/schemas/Address'
+          billingAddress:
+            $ref: '#/components/schemas/Address'
     Address:
       type: object
       description: Address of the user's shop

@@ -636,59 +636,10 @@ paths:
                     example: https://app.partstech.com/api-search/your_partnerId/your_test_userId/1ag3d2b5240e4jcbbe3ee9c49c929fe4/
 components:
   schemas:
-    PunchoutVehicleSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    TireSizeSearchParams:
-      type: object
-      required:
-      - width
-      - height
-      - rim
-      properties:
-        width:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
-        height:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
-        rim:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
     PlateSearchParamsByKeyword:
       allOf:
       - $ref: '#/components/schemas/PlateSearchParams'
       - $ref: '#/components/schemas/KeywordSearchParams'
-    VinSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    PunchoutVehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
     PlateSearchParams:
       description: 'A search parameters for the search by Plate.
 
@@ -723,44 +674,56 @@ components:
             plate:
               type: string
               example: SomePlate
-    PartTypesSearchParams:
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
       type: object
+      minProperties: 1
+      maxProperties: 2
       required:
-      - partTypeIds
+      - vin
       properties:
-        partTypeIds:
-          type: array
-          minItems: 1
-          maxItems: 50
-          uniqueItems: true
-          items:
-            type: integer
-          example:
-          - 1004
-          - 1006
-          description: The ID of a part type from the Autocare Association's PCdb.
-    KeywordSearchParams:
-      type: object
-      required:
-      - keyword
-      properties:
-        keyword:
+        vin:
           type: string
-          example: Air Filter
-    PlateSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    PunchoutVehicleSearchParamsByTireId:
+          example: SomeVIN
+    PunchoutAdditionalInformation:
+      type:
+      - object
+      - 'null'
+      properties:
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 15000
+    PunchoutVehicleSearchParamsByPartTypes:
       allOf:
       - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    PartsTechVehicleIdSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
       - $ref: '#/components/schemas/TireIdSearchParams'
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PunchoutVehicleSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
 
         '
       type: object
@@ -769,7 +732,8 @@ components:
       - makeId
       - modelId
       - subModelId
-      - engineConfigId
+      - engineId
+      - engineParams
       properties:
         yearId:
           type: integer
@@ -783,43 +747,19 @@ components:
         subModelId:
           type: integer
           example: 234
-        engineConfigId:
+        engineId:
           type: integer
-          example: 34
-    PartsTechVehicleIdSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    PunchoutVehicleSearchParamsByTireSize:
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    PunchoutVehicleSearchParamsByTireId:
       allOf:
       - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    PartsTechVehicleIdSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    PlateSearchParamsByTireId:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
       - $ref: '#/components/schemas/TireIdSearchParams'
-    PunchoutAdditionalInformation:
-      type:
-      - object
-      - 'null'
-      properties:
-        mileage:
-          type:
-          - integer
-          - 'null'
-          example: 15000
-    VinSearchParamsByTireId:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
-    PunchoutVehicleSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     TireIdSearchParams:
       type: object
       required:
@@ -858,35 +798,138 @@ components:
         cylinderHeadTypeId:
           type: integer
           example: 25243
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
 
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+        It consists on Vehicle ID and Part Types or Keyword.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vin
+      - vehicleId
       properties:
-        vin:
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    KeywordSearchParams:
+      type: object
+      required:
+      - keyword
+      properties:
+        keyword:
           type: string
-          example: SomeVIN
+          example: Air Filter
+    PunchoutVehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    VinSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
     VinSearchParamsByPartTypes:
       allOf:
       - $ref: '#/components/schemas/VinSearchParams'
       - $ref: '#/components/schemas/PartTypesSearchParams'
-    PartsTechVehicleIdSearchParamsByTireId:
+    PunchoutVehicleSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PunchoutVehicleSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VinSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    PartTypesSearchParams:
+      type: object
+      required:
+      - partTypeIds
+      properties:
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    TireSizeSearchParams:
+      type: object
+      required:
+      - width
+      - height
+      - rim
+      properties:
+        width:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        height:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        rim:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    PlateSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PartsTechVehicleIdSearchParamsByTireSize:
       allOf:
       - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    PlateSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
     URLs:
       type: object
       properties:
@@ -911,36 +954,22 @@ components:
           - 'null'
           format: url
           example: http://localhost:80/some-return-url
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
+    QuoteSettings:
+      type:
+      - object
+      - 'null'
       properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
-    VinSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
+        poNumber:
+          description: The value that is automatically placed in the PO field in the cart. Typically the Estimate or Repair Order number at the time of session creation.
+          type:
+          - string
+          - 'null'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
 
         '
       type: object
@@ -949,8 +978,7 @@ components:
       - makeId
       - modelId
       - subModelId
-      - engineId
-      - engineParams
+      - engineConfigId
       properties:
         yearId:
           type: integer
@@ -964,41 +992,13 @@ components:
         subModelId:
           type: integer
           example: 234
-        engineId:
+        engineConfigId:
           type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    PlateSearchParamsByPartTypes:
+          example: 34
+    PartsTechVehicleIdSearchParamsByKeyword:
       allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
-
-        It consists on Vehicle ID and Part Types or Keyword.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleId
-      properties:
-        vehicleId:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
-    QuoteSettings:
-      type:
-      - object
-      - 'null'
-      properties:
-        poNumber:
-          description: The value that is automatically placed in the PO field in the cart. Typically the Estimate or Repair Order number at the time of session creation.
-          type:
-          - string
-          - 'null'
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
   securitySchemes:
     bearerAuth:
       type: http

@@ -121,6 +121,37 @@ paths:
         '400':
           $ref: '#/components/responses/PlateDecodeError'
 components:
+  responses:
+    VinDecodeError:
+      description: VinDecodeError
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+            example:
+              error:
+                code: VinDecodeError
+                message: We cannot identify your vin number
+    PlateDecodeError:
+      description: PlateDecodeError
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+            example:
+              error:
+                code: PlateDecodeError
+                message: We cannot identify your license plate number
   schemas:
     Error:
       title: Error Definition
@@ -137,37 +168,6 @@ components:
           type:
           - string
           - 'null'
-  responses:
-    PlateDecodeError:
-      description: PlateDecodeError
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
-            example:
-              error:
-                code: PlateDecodeError
-                message: We cannot identify your license plate number
-    VinDecodeError:
-      description: VinDecodeError
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
-            example:
-              error:
-                code: VinDecodeError
-                message: We cannot identify your vin number
   securitySchemes:
     bearerAuth:
       type: http

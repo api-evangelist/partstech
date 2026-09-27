@@ -332,42 +332,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/ResponsePartTypeAttribute'
 components:
-  parameters:
-    perPage:
-      name: perPage
-      in: query
-      schema:
-        type: integer
-        enum:
-        - 10
-        - 25
-        - 50
-        - 100
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 50
-      description: 'Records per request. Default: 50'
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
-    locale:
-      name: locale
-      in: query
-      description: Locale, default en_US
-      schema:
-        type:
-        - string
-        - 'null'
-        enum:
-        - en_US
-        - es_MX
-      required: false
-      example: null
   schemas:
+    ResponsePartTypeAttribute:
+      type: object
+      required:
+      - name
+      - values
+      - required
+      properties:
+        name:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+        required:
+          type: boolean
     ResponsePartType:
       type: object
       required:
@@ -406,21 +386,41 @@ components:
         partTypeName: Voltage Regulator Screw
         description: Mounting screw for the voltage regulator.
         application: FITTED
-    ResponsePartTypeAttribute:
-      type: object
-      required:
-      - name
-      - values
-      - required
-      properties:
-        name:
-          type: string
-        values:
-          type: array
-          items:
-            type: string
-        required:
-          type: boolean
+  parameters:
+    perPage:
+      name: perPage
+      in: query
+      schema:
+        type: integer
+        enum:
+        - 10
+        - 25
+        - 50
+        - 100
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 50
+      description: 'Records per request. Default: 50'
+    locale:
+      name: locale
+      in: query
+      description: Locale, default en_US
+      schema:
+        type:
+        - string
+        - 'null'
+        enum:
+        - en_US
+        - es_MX
+      required: false
+      example: null
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
   securitySchemes:
     bearerAuth:
       type: http

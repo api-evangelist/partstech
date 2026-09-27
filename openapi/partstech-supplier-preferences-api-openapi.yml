@@ -276,6 +276,45 @@ paths:
           $ref: '#/components/responses/SupplierPreferences'
 components:
   schemas:
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    PreferredStore:
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+            example: asdasdb
+    SupplierPreferenceCredentialsRequest:
+      type: array
+      items:
+        type: object
+        description: Supplier preference credential request
+        required:
+        - name
+        - value
+        properties:
+          name:
+            type: string
+          value:
+            type: string
     SupplierPreferenceCredentialsResponse:
       type: object
       description: Credential
@@ -310,45 +349,6 @@ components:
           type: string
           example: Advance Auto Parts
           description: The name of a supplier.
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    SupplierPreferenceCredentialsRequest:
-      type: array
-      items:
-        type: object
-        description: Supplier preference credential request
-        required:
-        - name
-        - value
-        properties:
-          name:
-            type: string
-          value:
-            type: string
-    PreferredStore:
-      allOf:
-      - $ref: '#/components/schemas/BriefStore'
-      - type: object
-        required:
-        - sellerId
-        properties:
-          sellerId:
-            type:
-            - string
-            - 'null'
-            example: asdasdb
   responses:
     SupplierPreferences:
       description: OK

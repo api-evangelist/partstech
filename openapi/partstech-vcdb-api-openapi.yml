@@ -458,50 +458,16 @@ paths:
                 example: 2019-04-15
 components:
   parameters:
-    year:
-      name: year
+    make:
+      name: make
       in: query
-      description: Year
-      schema:
-        type: integer
-        minLength: 4
-        maxLength: 4
-        pattern: \d{4,4}
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2017
-    submodel:
-      name: submodel
-      in: query
-      description: Submodel ID
-      schema:
-        type:
-        - integer
-        - 'null'
-        pattern: \d+
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 113
-    model:
-      name: model
-      in: query
-      description: Model ID
+      description: Make ID
       schema:
         type: integer
         pattern: \d+
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 105
-    engine:
-      name: engine
-      in: query
-      description: Base Engine ID
-      schema:
-        type: integer
-        pattern: \d+
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 5486
+      example: 21
     region:
       name: region
       in: query
@@ -514,17 +480,59 @@ components:
         - MX
       required: false
       example: US
-    make:
-      name: make
+    submodel:
+      name: submodel
       in: query
-      description: Make ID
+      description: Submodel ID
+      schema:
+        type:
+        - integer
+        - 'null'
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 113
+    engine:
+      name: engine
+      in: query
+      description: Base Engine ID
       schema:
         type: integer
         pattern: \d+
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 21
+      example: 5486
+    year:
+      name: year
+      in: query
+      description: Year
+      schema:
+        type: integer
+        minLength: 4
+        maxLength: 4
+        pattern: \d{4,4}
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2017
+    model:
+      name: model
+      in: query
+      description: Model ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 105
   schemas:
+    Regions:
+      description: Array of country codes ISO 3166-1 alpha-2
+      type: array
+      items:
+        type: string
+      example:
+      - US
+      - CA
     ResponseVehicle:
       type:
       - object
@@ -598,14 +606,6 @@ components:
         deprecated:
           type: boolean
           example: false
-    Regions:
-      description: Array of country codes ISO 3166-1 alpha-2
-      type: array
-      items:
-        type: string
-      example:
-      - US
-      - CA
     EngineParams:
       title: Engine params
       type: object

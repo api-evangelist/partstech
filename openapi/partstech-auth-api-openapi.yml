@@ -112,6 +112,51 @@ paths:
           $ref: '#/components/responses/InvalidToken'
 components:
   responses:
+    InvalidRequest:
+      description: Malformed request. The request body is not parse-able or with invalid content.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidRequestError'
+    Tokens:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tokenType
+            - accessToken
+            - expiresIn
+            - partner
+            properties:
+              tokenType:
+                type: string
+                enum:
+                - bearer
+              accessToken:
+                type: string
+                description: A valid JSON Web Token
+                example: some JWT token
+              refreshToken:
+                type:
+                - string
+                - 'null'
+                deprecated: true
+                example: some JWT token
+              expiresIn:
+                type: integer
+                format: int64
+                description: Time until `accessToken` expires, 60 minutes.
+                example: 10947234663
+              username:
+                type: string
+                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
+                example: partstech_user
+              partner:
+                type: string
+                description: The Partner Id of the partner provided in the request.
+                example: partstech_partner
     InvalidToken:
       description: Invalid Token.
       content:
@@ -139,6 +184,47 @@ components:
               error:
                 code: InvalidToken
                 message: Invalid token was provided
+    AuthenticationFailed:
+      description: Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                title: Error details
+                type: object
+                required:
+                - code
+                - message
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+          examples:
+            ExpiredToken:
+              value:
+                error:
+                  code: InvalidToken
+                  message: Provided token is expired
+            InvalidToken:
+              value:
+                error:
+                  code: InvalidToken
+                  message: Provided token is invalid
+            UserAuthenticationFailed:
+              value:
+                error:
+                  code: UserAuthenticationFailed
+                  message: Incorrect user id or user key
+            PartnerAuthenticationFailed:
+              value:
+                error:
+                  code: PartnerAuthenticationFailed
+                  message: Incorrect partner id or partner key
     InternalServerError:
       description: Internal Server Error.
       content:
@@ -154,12 +240,6 @@ components:
               error:
                 code: InternalError
                 message: Internal error
-    InvalidRequest:
-      description: Malformed request. The request body is not parse-able or with invalid content.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InvalidRequestError'
     ForbiddenError:
       description: Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues.
       content:
@@ -206,86 +286,6 @@ components:
                 error:
                   code: IncorrectMode
                   message: Incorrect user for test mode
-    AuthenticationFailed:
-      description: Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                title: Error details
-                type: object
-                required:
-                - code
-                - message
-                properties:
-                  code:
-                    type: string
-                  message:
-                    type: string
-          examples:
-            ExpiredToken:
-              value:
-                error:
-                  code: InvalidToken
-                  message: Provided token is expired
-            InvalidToken:
-              value:
-                error:
-                  code: InvalidToken
-                  message: Provided token is invalid
-            UserAuthenticationFailed:
-              value:
-                error:
-                  code: UserAuthenticationFailed
-                  message: Incorrect user id or user key
-            PartnerAuthenticationFailed:
-              value:
-                error:
-                  code: PartnerAuthenticationFailed
-                  message: Incorrect partner id or partner key
-    Tokens:
-      description: OK
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - tokenType
-            - accessToken
-            - expiresIn
-            - partner
-            properties:
-              tokenType:
-                type: string
-                enum:
-                - bearer
-              accessToken:
-                type: string
-                description: A valid JSON Web Token
-                example: some JWT token
-              refreshToken:
-                type:
-                - string
-                - 'null'
-                deprecated: true
-                example: some JWT token
-              expiresIn:
-                type: integer
-                format: int64
-                description: Time until `accessToken` expires, 60 minutes.
-                example: 10947234663
-              username:
-                type: string
-                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
-                example: partstech_user
-              partner:
-                type: string
-                description: The Partner Id of the partner provided in the request.
-                example: partstech_partner
   schemas:
     InvalidRequestError:
       description: Malformed request. The request body is not parse-able or with invalid content.
@@ -307,6 +307,18 @@ components:
         - credentials.user.key - This value should not be blank.
         - credentials.user.id - This value should be of type string.
         - credentials.partner - This value should not be blank.
+    PartnerCredentials:
+      type: object
+      description: Partner Auth Credentials
+      required:
+      - partner
+      properties:
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        partner:
+          id: partstech_partner
+          key: Partner API key
     Error:
       title: Error Definition
       type: object
@@ -355,18 +367,6 @@ components:
           type: string
           description: User or Partner API key
           example: APIkey
-    PartnerCredentials:
-      type: object
-      description: Partner Auth Credentials
-      required:
-      - partner
-      properties:
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        partner:
-          id: partstech_partner
-          key: Partner API key
   securitySchemes:
     bearerAuth:
       type: http

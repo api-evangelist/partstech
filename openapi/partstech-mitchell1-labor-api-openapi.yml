@@ -205,6 +205,26 @@ paths:
                     $ref: '#/components/schemas/Procedure'
 components:
   schemas:
+    ProcedureInformation:
+      type: object
+      properties:
+        component:
+          type: string
+          description: The component of the labor procedure.
+        operation:
+          type: string
+          description: The operation of the labor procedure.
+        skillLevel:
+          type: string
+          description: Technical skill level.
+        procedureNote:
+          type: string
+          description: A note about the labor procedure.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          description: List of different vehicle application items.
     ApplicationGroup:
       type: object
       properties:
@@ -229,29 +249,6 @@ components:
           items:
             $ref: '#/components/schemas/ProcedureInformation'
           description: List of combination labor procedures.
-    Procedure:
-      type: object
-      properties:
-        group:
-          type: string
-          description: The group the labor procedure in.
-        subgroup:
-          type: string
-          description: The subgroup the labor procedure in.
-        component:
-          type: string
-          description: The component of the labor procedure.
-        operation:
-          type: string
-          description: The operation of the labor procedure.
-        skillLevel:
-          type: string
-          description: Technical skill level. Nothing is returned, if there is no technician skill level information.
-        applicationGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/ApplicationGroup'
-          description: Group of elements associated with different vehicle applications.
     Item:
       type: object
       properties:
@@ -288,9 +285,15 @@ components:
           type: string
         subgroup:
           type: string
-    ProcedureInformation:
+    Procedure:
       type: object
       properties:
+        group:
+          type: string
+          description: The group the labor procedure in.
+        subgroup:
+          type: string
+          description: The subgroup the labor procedure in.
         component:
           type: string
           description: The component of the labor procedure.
@@ -299,15 +302,12 @@ components:
           description: The operation of the labor procedure.
         skillLevel:
           type: string
-          description: Technical skill level.
-        procedureNote:
-          type: string
-          description: A note about the labor procedure.
-        items:
+          description: Technical skill level. Nothing is returned, if there is no technician skill level information.
+        applicationGroups:
           type: array
           items:
-            $ref: '#/components/schemas/Item'
-          description: List of different vehicle application items.
+            $ref: '#/components/schemas/ApplicationGroup'
+          description: Group of elements associated with different vehicle applications.
   securitySchemes:
     bearerAuth:
       type: http

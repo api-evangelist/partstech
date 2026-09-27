@@ -882,41 +882,302 @@ paths:
                         count: 0
 components:
   schemas:
-    Brand:
+    BriefStore:
       type: object
-      description: Contains brand information about a part.
       required:
-      - brandID
-      - brandName
+      - id
+      - name
       properties:
-        brandID:
-          type: string
-          example: BBCM
-          description: The ID of a brand from the Autocare Association.
-        brandName:
-          type: string
-          example: Alba
-          description: The name of a brand.
         id:
-          description: PartsTech's ID for a brand.
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    PlateSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    LaborPartParams:
+      type: object
+      properties:
+        labor:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/ResponsePartLabor'
+    VehicleSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
           type:
           - integer
           - 'null'
-          example: 1
-        displayName:
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
           type:
           - string
           - 'null'
-          example: Alba
-        lineCode:
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
           type:
           - string
           - 'null'
+          example: Filters
+          description: The name of a subcategory.
       example:
-        brandID: BBHK
-        brandName: Bosch
-        id: 551
-        displayName: Bosch
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    LineCardPart:
+      allOf:
+      - $ref: '#/components/schemas/CatalogPart'
+      - $ref: '#/components/schemas/LineCardPartParams'
+    CartSearchSupplier:
+      allOf:
+      - $ref: '#/components/schemas/BriefSupplier'
+      - type: object
+        required:
+        - allowStoreSelect
+        - availabilitySelect
+        properties:
+          allowStoreSelect:
+            type: boolean
+            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
+          availabilitySelect:
+            type: boolean
+            description: If true for a supplier, users are required to select a specific store when sourcing parts.
+          postOrderUpdates:
+            type: boolean
+            description: If true for a supplier, order can be updated after they placed.
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    QuoteParams:
+      type: object
+      required:
+      - status
+      - supplier
+      - store
+      - lineCardId
+      - price
+      properties:
+        status:
+          type: string
+          enum:
+          - IN_STOCK
+          - OUT_OF_STOCK
+          - SPECIAL_ORDER
+          - BACK_ORDER
+          - CHECK_AVAILABILITY
+          description: 'CHECK_AVAILABILITY - Part availability can be received only through ["Get Part (with request body)"](#operation/getPartWithRequestBody) with `storeId` provided. This applies to certain Tire suppliers that require branch selection.
+
+            '
+        supplier:
+          $ref: '#/components/schemas/CartSearchSupplier'
+        store:
+          $ref: '#/components/schemas/BriefStore'
+        lineCardId:
+          type: integer
+          example: 123
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        quantity:
+          type: integer
+        backOrder:
+          type: boolean
+        storesAvailability:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            minProperties: 2
+            required:
+            - specificName
+            - quantity
+            properties:
+              specificName:
+                type: string
+                example: In network
+              store:
+                $ref: '#/components/schemas/BriefStore'
+              quantity:
+                type: integer
+                example: 3
+              main:
+                type: boolean
+                example: true
+        deliveryNotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryNote'
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    VehicleSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
     CatalogPart:
       type: object
       required:
@@ -1156,61 +1417,151 @@ components:
           - program: extra Loyalty Program
             points: 10
             bonusPoints: 1
+    VehicleSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PartsTechVehicleIdSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    QuotedPart:
+      allOf:
+      - $ref: '#/components/schemas/QuoteParams'
+      - $ref: '#/components/schemas/CatalogPart'
+      - $ref: '#/components/schemas/LaborPartParams'
+    VehicleSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
     VehicleParams:
       oneOf:
       - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
       - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    TireSizeSearchParams:
+    TireIdSearchParams:
       type: object
       required:
-      - width
-      - height
-      - rim
+      - tireId
       properties:
-        width:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
-        height:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
-        rim:
-          type: number
-          format: float
-          description: See [Tire Sizes](#operation/tireSizes)
-    VehicleSearchParamsByKeyword:
+        tireId:
+          type: string
+          description: See [Tire Sizes by vehicle](#operation/tiresSizesByVehicle)
+          example: 1
+    PartsTechVehicleIdSearchParamsByPartTypes:
       allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    LineCardPart:
-      allOf:
-      - $ref: '#/components/schemas/CatalogPart'
-      - $ref: '#/components/schemas/LineCardPartParams'
-    PlateSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
 
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+        It consists on Vehicle ID and Part Types or Keyword.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleParams
+      - vehicleId
       properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
     PartPrice:
       type: object
       required:
@@ -1268,60 +1619,6 @@ components:
           description: Minimum Advertised Price
           format: float
           example: 1.9
-    VinSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
-
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - plate
-      properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
-    PartTypesSearchParams:
-      type: object
-      required:
-      - partTypeIds
-      properties:
-        partTypeIds:
-          type: array
-          minItems: 1
-          maxItems: 50
-          uniqueItems: true
-          items:
-            type: integer
-          example:
-          - 1004
-          - 1006
-          description: The ID of a part type from the Autocare Association's PCdb.
     KeywordSearchParams:
       type: object
       required:
@@ -1330,67 +1627,14 @@ components:
         keyword:
           type: string
           example: Air Filter
-    Rewards:
-      type:
-      - array
-      - 'null'
-      minItems: 0
-      items:
-        type: object
-        properties:
-          program:
-            type:
-            - string
-            - 'null'
-          points:
-            type:
-            - integer
-            - 'null'
-          bonusPoints:
-            type:
-            - integer
-            - 'null'
-    Attribute:
-      type: object
-      properties:
-        name:
-          type: string
-        label:
-          type: string
-        value:
-          type: string
-        type:
-          type: string
-          enum:
-          - Vehicle
-          - Part
-          - Both
-        dbInfo:
-          type:
-          - object
-          - 'null'
-          required:
-          - dbName
-          - tableName
-          - idFieldName
-          - idValue
-          properties:
-            dbName:
-              type: string
-            tableName:
-              type: string
-            idFieldName:
-              type: string
-            idValue:
-              type: string
-    PartCategory:
-      type:
-      - string
-      - 'null'
-      enum:
-      - Maintenance
-      - Service
-      - Consumable
+    VinSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
     DeliveryNote:
       type: object
       required:
@@ -1406,172 +1650,6 @@ components:
           type:
           - string
           - 'null'
-    PlateSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-    PartsTechVehicleIdSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    VehicleSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    CartSearchSupplier:
-      allOf:
-      - $ref: '#/components/schemas/BriefSupplier'
-      - type: object
-        required:
-        - allowStoreSelect
-        - availabilitySelect
-        properties:
-          allowStoreSelect:
-            type: boolean
-            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
-          availabilitySelect:
-            type: boolean
-            description: If true for a supplier, users are required to select a specific store when sourcing parts.
-          postOrderUpdates:
-            type: boolean
-            description: If true for a supplier, order can be updated after they placed.
-    NonAppSearchParams:
-      description: 'Parameters for the search by universal part types.
-
-
-        Use part types with application `UNIVERSAL` or `UNIVERSAL_FITTED` (see ["Get/Search Part Types"](#operation/getPartTypes)).
-
-        Check and select `required` attributes for a part type before sending of search request (see ["Get Part Type Attributes"](#operation/getPartTypeAttributes)).
-
-        '
-      type: object
-      required:
-      - partTypeId
-      - attributes
-      properties:
-        partTypeId:
-          type: integer
-          description: The ID of a part type from the Autocare Association's PCdb.
-        attributes:
-          type: array
-          items:
-            type: object
-            required:
-            - name
-            - values
-            properties:
-              name:
-                type: string
-              values:
-                type: array
-                items:
-                  type: string
-    PartsTechVehicleIdSearchParamsByTireSize:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/TireSizeSearchParams'
-    PlateSearchParamsByTireId:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
-    VinSearchParamsByTireId:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
-    TireIdSearchParams:
-      type: object
-      required:
-      - tireId
-      properties:
-        tireId:
-          type: string
-          description: See [Tire Sizes by vehicle](#operation/tiresSizesByVehicle)
-          example: 1
-    PartsTechVehicleIdSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    PartsTechVehicleIdSearchParamsByTireId:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
     VinSearchParamsByPartTypes:
       allOf:
       - $ref: '#/components/schemas/VinSearchParams'
@@ -1733,24 +1811,65 @@ components:
                 - string
                 - 'null'
                 example: 'Brake: Disc/Disc/4-Wheel ABS'
-    VehicleSearchParamsByTireId:
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    VinSearchParamsByTireSize:
       allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/TireIdSearchParams'
-    LineCardPartParams:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    PartTypesSearchParams:
       type: object
       required:
-      - supplier
-      - store
-      - lineCardId
+      - partTypeIds
       properties:
-        supplier:
-          $ref: '#/components/schemas/CartSearchSupplier'
-        store:
-          $ref: '#/components/schemas/BriefStore'
-        lineCardId:
-          type: integer
-          example: 123
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    TireSizeSearchParams:
+      type: object
+      required:
+      - width
+      - height
+      - rim
+      properties:
+        width:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        height:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
+        rim:
+          type: number
+          format: float
+          description: See [Tire Sizes](#operation/tireSizes)
     PartNumberSearchParams:
       description: 'A search parameters for the search by PartNumber.
 
@@ -1774,27 +1893,69 @@ components:
             type: string
           example:
           - 12345
-    BriefSupplier:
+    PlateSearchParamsByTireId:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireIdSearchParams'
+    LineCardPartParams:
       type: object
       required:
-      - id
-      - name
+      - supplier
+      - store
+      - lineCardId
       properties:
-        id:
+        supplier:
+          $ref: '#/components/schemas/CartSearchSupplier'
+        store:
+          $ref: '#/components/schemas/BriefStore'
+        lineCardId:
           type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
-        name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
-    VinSearchParamsByTireSize:
+          example: 123
+    PartsTechVehicleIdSearchParamsByTireSize:
       allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
       - $ref: '#/components/schemas/TireSizeSearchParams'
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
+    PlateSearchParamsByTireSize:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/TireSizeSearchParams'
+    NonAppSearchParams:
+      description: 'Parameters for the search by universal part types.
+
+
+        Use part types with application `UNIVERSAL` or `UNIVERSAL_FITTED` (see ["Get/Search Part Types"](#operation/getPartTypes)).
+
+        Check and select `required` attributes for a part type before sending of search request (see ["Get Part Type Attributes"](#operation/getPartTypeAttributes)).
+
+        '
+      type: object
+      required:
+      - partTypeId
+      - attributes
+      properties:
+        partTypeId:
+          type: integer
+          description: The ID of a part type from the Autocare Association's PCdb.
+        attributes:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - values
+            properties:
+              name:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
 
         '
       type: object
@@ -1803,8 +1964,7 @@ components:
       - makeId
       - modelId
       - subModelId
-      - engineId
-      - engineParams
+      - engineConfigId
       properties:
         yearId:
           type: integer
@@ -1818,173 +1978,13 @@ components:
         subModelId:
           type: integer
           example: 234
-        engineId:
+        engineConfigId:
           type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    ResponseTaxonomy:
-      type:
-      - object
-      - 'null'
-      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
-      required:
-      - partTypeId
-      properties:
-        partTypeId:
-          type: integer
-          example: 14216
-          description: The ID of a part type from the Autocare Association's PCdb.
-        partTypeName:
-          type:
-          - string
-          - 'null'
-          example: Air Filter Set
-          description: The name of a part type.
-        partTypeDescription:
-          type:
-          - string
-          - 'null'
-          example: Initial fill additive for turbochargers.
-          description: The description of a part type.
-        categoryId:
-          type:
-          - integer
-          - 'null'
-          example: 12
-          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
-        categoryName:
-          type:
-          - string
-          - 'null'
-          example: Air and Fuel Delivery
-          description: The name of a category.
-        subCategoryId:
-          type: integer
-          example: 153
-          description: The ID of a subcategory from the Autocare Association's PCdb.
-        subCategoryName:
-          type:
-          - string
-          - 'null'
-          example: Filters
-          description: The name of a subcategory.
-      example:
-        partTypeId: 8852
-        partTypeName: Windshield Wiper Blade
-        categoryId: 22
-        categoryName: Wiper and Washer
-        subCategoryId: 236
-        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
-    LaborPartParams:
-      type: object
-      properties:
-        labor:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/ResponsePartLabor'
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    VehicleSearchParamsByPartTypes:
+          example: 34
+    PartsTechVehicleIdSearchParamsByKeyword:
       allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    PlateSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    QuotedPart:
-      allOf:
-      - $ref: '#/components/schemas/QuoteParams'
-      - $ref: '#/components/schemas/CatalogPart'
-      - $ref: '#/components/schemas/LaborPartParams'
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
-
-        It consists on Vehicle ID and Part Types or Keyword.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleId
-      properties:
-        vehicleId:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
-    QuoteParams:
-      type: object
-      required:
-      - status
-      - supplier
-      - store
-      - lineCardId
-      - price
-      properties:
-        status:
-          type: string
-          enum:
-          - IN_STOCK
-          - OUT_OF_STOCK
-          - SPECIAL_ORDER
-          - BACK_ORDER
-          - CHECK_AVAILABILITY
-          description: 'CHECK_AVAILABILITY - Part availability can be received only through ["Get Part (with request body)"](#operation/getPartWithRequestBody) with `storeId` provided. This applies to certain Tire suppliers that require branch selection.
-
-            '
-        supplier:
-          $ref: '#/components/schemas/CartSearchSupplier'
-        store:
-          $ref: '#/components/schemas/BriefStore'
-        lineCardId:
-          type: integer
-          example: 123
-        price:
-          $ref: '#/components/schemas/PartPrice'
-        quantity:
-          type: integer
-        backOrder:
-          type: boolean
-        storesAvailability:
-          type: array
-          minItems: 0
-          items:
-            type: object
-            minProperties: 2
-            required:
-            - specificName
-            - quantity
-            properties:
-              specificName:
-                type: string
-                example: In network
-              store:
-                $ref: '#/components/schemas/BriefStore'
-              quantity:
-                type: integer
-                example: 3
-              main:
-                type: boolean
-                example: true
-        deliveryNotes:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeliveryNote'
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
   securitySchemes:
     bearerAuth:
       type: http

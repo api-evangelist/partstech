@@ -111,14 +111,6 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 50
       description: 'Records per request. Default: 50'
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
     direction:
       name: direction
       in: query
@@ -131,6 +123,14 @@ components:
         default: ASC
       required: false
       example: ASC
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
   schemas:
     PartTypeTaskResponse:
       type: object

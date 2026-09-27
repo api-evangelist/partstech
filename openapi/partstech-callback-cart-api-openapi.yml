@@ -173,6 +173,20 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
     PaidOrderStore:
       description: Store Data for Paid Orders
       allOf:
@@ -185,6 +199,394 @@ components:
             type:
             - string
             - 'null'
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    CartSearchSupplier:
+      allOf:
+      - $ref: '#/components/schemas/BriefSupplier'
+      - type: object
+        required:
+        - allowStoreSelect
+        - availabilitySelect
+        properties:
+          allowStoreSelect:
+            type: boolean
+            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
+          availabilitySelect:
+            type: boolean
+            description: If true for a supplier, users are required to select a specific store when sourcing parts.
+          postOrderUpdates:
+            type: boolean
+            description: If true for a supplier, order can be updated after they placed.
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    CartLocalInventoryItem:
+      type: object
+      required:
+      - itemId
+      - inventoryUID
+      - partId
+      - quantity
+      - price
+      - partName
+      - partNumber
+      - availability
+      - brand
+      properties:
+        itemId:
+          type: string
+          example: 0ze4f01824764a61991b9d090fdc1813
+          description: 'The unique identifier for an item added to a cart.
+
+            This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method)."
+
+            '
+        inventoryUID:
+          type: string
+          example: 123123123
+          description: ID of item in local inventory.
+        partId:
+          type: string
+          example: ABCD-12345
+          description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`.
+        quantity:
+          type: integer
+          example: 2
+          description: The requested quantity for a part.
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        partName:
+          type: string
+          example: Motorcraft Engine Oil Filter
+          description: The name of the part. Part name is typically the brand name + the part type name. For tires it is typically the brand name + model. There is a shop setting that can be enabled to remove the brand name from this field for all parts (tires excluded).
+        partNumber:
+          type: string
+          example: 12345
+          description: The manufacturer part number.
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part image that PartsTech uses for the part.
+          example: https://image.partstech.com/d1/images/e4/11/71/w110_e411711499973c7640e852e84ed20fca0cd5c9d2.png
+        partstechCatalogURL:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: The URL of the part's description on PartsTech.
+          example: https://punchout.partstech.com/Motorcraft-Engine-Oil-Filter/details/BBRH-FL-500-S?part_term=5340
+        availability:
+          type: boolean
+          example: true
+          description: Returns true if the part is available at the time of quoting.
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          description: Name of the vehicle selected for fitment during the PartsTech session. Typically consists of year, make, model, and engine.
+        brand:
+          $ref: '#/components/schemas/Brand'
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        searchedAsPartNumber:
+          type:
+          - string
+          - 'null'
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Attribute'
+    ItemizedQuotePricingLine:
+      type: object
+      required:
+      - name
+      - type
+      - price
+      - taxed
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - TIRES
+          - LABOR
+          - DISPOSAL
+          - ADDON
+          - FEE
+          - DISCOUNT
+          description: Do allow to receive extra types
+        price:
+          type: number
+          format: float
+        perTirePrice:
+          type:
+          - number
+          - 'null'
+          format: float
+        taxed:
+          type: boolean
+    PunchoutLaborItem:
+      type: object
+      required:
+      - laborItemId
+      - source
+      - name
+      - notes
+      - skill
+      - requiredSkill
+      - hours
+      - price
+      - maintenance
+      properties:
+        laborItemId:
+          type: string
+        source:
+          type: string
+          enum:
+          - MOTOR
+          - MITCHELL
+          - CUSTOM
+          example: MOTOR
+          description: Source of labor application. Motor, mitchell APIs or manually entered data.
+        name:
+          type: string
+          description: Name of labor application
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Nots for labor application
+        skill:
+          type: string
+          description: Required skill
+        requiredSkill:
+          type: object
+          description: Required skill
+          required:
+          - code
+          - name
+          - description
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+        hours:
+          type: number
+          format: float
+          description: Required hours
+        price:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Hours * labor rate
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          description: PartsTech's ID for a vehicle.
+        partTypeId:
+          type:
+          - integer
+          - 'null'
+          description: The ID of a part type from the Autocare Association's PCdb.
+        taxonomy:
+          type:
+          - object
+          - 'null'
+          description: Motor Taxonomy
+          required:
+          - name
+          - action
+          properties:
+            taxonomyId:
+              type:
+              - integer
+              - 'null'
+            name:
+              type: string
+            action:
+              type: string
+        maintenance:
+          type:
+          - object
+          - 'null'
+          description: Additional maintenance schedules data
+          required:
+          - severity
+          properties:
+            severity:
+              type: string
+              enum:
+              - Severe
+              - Normal
+          oneOf:
+          - type: object
+            properties:
+              interval:
+                type: object
+                required:
+                - interval
+                - type
+                properties:
+                  value:
+                    type: integer
+                    example: 10000
+                  type:
+                    type: string
+                    enum:
+                    - Miles
+                    - Months
+          - type: object
+            properties:
+              indicator:
+                type: object
+                description: Maintenance based on an indicator
+                required:
+                - name
+                properties:
+                  name:
+                    type: string
+                    example: Service 1
     Brand:
       type: object
       description: Contains brand information about a part.
@@ -220,6 +622,118 @@ components:
         brandName: Bosch
         id: 551
         displayName: Bosch
+    Address:
+      type: object
+      description: Address of the user's shop
+      required:
+      - address1
+      - city
+      - state
+      - zipCode
+      properties:
+        address1:
+          type: string
+          example: 1 Broadway
+        address2:
+          type:
+          - string
+          - 'null'
+          example: 14th Floor
+        city:
+          type: string
+          example: Cambridge
+        state:
+          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          example: MA
+        zipCode:
+          type: string
+          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
+          example: '02142'
+        country:
+          description: ISO 3166-1 alpha-2
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          default: US
+          example: US
+    PunchoutPurchasedOrder:
+      allOf:
+      - type: object
+        required:
+        - id
+        - orderUrl
+        properties:
+          id:
+            description: The PartsTech ID for the order.
+            type: integer
+            example: 128577
+          orderUrl:
+            type: string
+            example: https://app.partstech.com/some-invoice-url
+            description: The URL of the PartsTech order details page.
+      - $ref: '#/components/schemas/PunchoutOrder'
+    PartPrice:
+      type: object
+      required:
+      - cost
+      - core
+      - fet
+      properties:
+        list:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 1.2
+          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
+        price:
+          type: number
+          format: float
+          example: 1.6
+          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
+        cost:
+          type: number
+          format: float
+          example: 1.24
+          description: Cost of an item for the user including any discounts. Excludes any core charges.
+        core:
+          type: number
+          format: float
+          example: 0.4
+          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
+        fet:
+          type:
+          - number
+          - 'null'
+          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
+          format: float
+          example: 1.2
+        retail:
+          type:
+          - number
+          - 'null'
+          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
+          format: float
+          example: 2
+        discount:
+          type:
+          - number
+          - 'null'
+          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
+          format: float
+          example: 0.2
+        map:
+          type:
+          - number
+          - 'null'
+          description: Minimum Advertised Price
+          format: float
+          example: 1.9
     ItemizedQuote:
       type:
       - object
@@ -231,6 +745,36 @@ components:
       properties:
         quantity:
           type: integer
+        tax:
+          type: number
+          format: float
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemizedQuotePricingLine'
+    DeliveryNote:
+      type: object
+      required:
+      - label
+      - text
+      - date
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+    ItemizedItemQuote:
+      type:
+      - object
+      - 'null'
+      required:
+      - tax
+      - lines
+      properties:
         tax:
           type: number
           format: float
@@ -390,63 +934,6 @@ components:
             $ref: '#/components/schemas/DeliveryNote'
         itemizedQuote:
           $ref: '#/components/schemas/ItemizedItemQuote'
-    PartPrice:
-      type: object
-      required:
-      - cost
-      - core
-      - fet
-      properties:
-        list:
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 1.2
-          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
-        price:
-          type: number
-          format: float
-          example: 1.6
-          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
-        cost:
-          type: number
-          format: float
-          example: 1.24
-          description: Cost of an item for the user including any discounts. Excludes any core charges.
-        core:
-          type: number
-          format: float
-          example: 0.4
-          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
-        fet:
-          type:
-          - number
-          - 'null'
-          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
-          format: float
-          example: 1.2
-        retail:
-          type:
-          - number
-          - 'null'
-          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
-          format: float
-          example: 2
-        discount:
-          type:
-          - number
-          - 'null'
-          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
-          format: float
-          example: 0.2
-        map:
-          type:
-          - number
-          - 'null'
-          description: Minimum Advertised Price
-          format: float
-          example: 1.9
     User:
       type: object
       required:
@@ -498,82 +985,16 @@ components:
         demo:
           type: boolean
           example: false
-    ItemizedItemQuote:
-      type:
-      - object
-      - 'null'
-      required:
-      - tax
-      - lines
-      properties:
-        tax:
-          type: number
-          format: float
-        lines:
-          type: array
-          items:
-            $ref: '#/components/schemas/ItemizedQuotePricingLine'
-    Rewards:
-      type:
-      - array
-      - 'null'
-      minItems: 0
-      items:
-        type: object
+    OrderStore:
+      description: Store Data for Unpaid Orders
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - address
         properties:
-          program:
-            type:
-            - string
-            - 'null'
-          points:
-            type:
-            - integer
-            - 'null'
-          bonusPoints:
-            type:
-            - integer
-            - 'null'
-    Attribute:
-      type: object
-      properties:
-        name:
-          type: string
-        label:
-          type: string
-        value:
-          type: string
-        type:
-          type: string
-          enum:
-          - Vehicle
-          - Part
-          - Both
-        dbInfo:
-          type:
-          - object
-          - 'null'
-          required:
-          - dbName
-          - tableName
-          - idFieldName
-          - idValue
-          properties:
-            dbName:
-              type: string
-            tableName:
-              type: string
-            idFieldName:
-              type: string
-            idValue:
-              type: string
-    PartCategory:
-      type:
-      - string
-      - 'null'
-      enum:
-      - Maintenance
-      - Service
-      - Consumable
+          address:
+            $ref: '#/components/schemas/Address'
     PunchoutOrder:
       type: object
       required:
@@ -666,427 +1087,6 @@ components:
           - 'null'
           example: Notes
           description: Supplier notes
-    DeliveryNote:
-      type: object
-      required:
-      - label
-      - text
-      - date
-      properties:
-        label:
-          type:
-          - string
-          - 'null'
-        text:
-          type:
-          - string
-          - 'null'
-    CartSearchSupplier:
-      allOf:
-      - $ref: '#/components/schemas/BriefSupplier'
-      - type: object
-        required:
-        - allowStoreSelect
-        - availabilitySelect
-        properties:
-          allowStoreSelect:
-            type: boolean
-            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
-          availabilitySelect:
-            type: boolean
-            description: If true for a supplier, users are required to select a specific store when sourcing parts.
-          postOrderUpdates:
-            type: boolean
-            description: If true for a supplier, order can be updated after they placed.
-    PunchoutPurchasedOrder:
-      allOf:
-      - type: object
-        required:
-        - id
-        - orderUrl
-        properties:
-          id:
-            description: The PartsTech ID for the order.
-            type: integer
-            example: 128577
-          orderUrl:
-            type: string
-            example: https://app.partstech.com/some-invoice-url
-            description: The URL of the PartsTech order details page.
-      - $ref: '#/components/schemas/PunchoutOrder'
-    ItemizedQuotePricingLine:
-      type: object
-      required:
-      - name
-      - type
-      - price
-      - taxed
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-          enum:
-          - TIRES
-          - LABOR
-          - DISPOSAL
-          - ADDON
-          - FEE
-          - DISCOUNT
-          description: Do allow to receive extra types
-        price:
-          type: number
-          format: float
-        perTirePrice:
-          type:
-          - number
-          - 'null'
-          format: float
-        taxed:
-          type: boolean
-    CartLocalInventoryItem:
-      type: object
-      required:
-      - itemId
-      - inventoryUID
-      - partId
-      - quantity
-      - price
-      - partName
-      - partNumber
-      - availability
-      - brand
-      properties:
-        itemId:
-          type: string
-          example: 0ze4f01824764a61991b9d090fdc1813
-          description: 'The unique identifier for an item added to a cart.
-
-            This ID allows PartsTech to reference a specific item in a specific session and its cart details (e.g. PO number, supplier notes, delivery method)."
-
-            '
-        inventoryUID:
-          type: string
-          example: 123123123
-          description: ID of item in local inventory.
-        partId:
-          type: string
-          example: ABCD-12345
-          description: PartsTech's ID for a part. Consists of `brandId`-`partNumber`.
-        quantity:
-          type: integer
-          example: 2
-          description: The requested quantity for a part.
-        price:
-          $ref: '#/components/schemas/PartPrice'
-        partName:
-          type: string
-          example: Motorcraft Engine Oil Filter
-          description: The name of the part. Part name is typically the brand name + the part type name. For tires it is typically the brand name + model. There is a shop setting that can be enabled to remove the brand name from this field for all parts (tires excluded).
-        partNumber:
-          type: string
-          example: 12345
-          description: The manufacturer part number.
-        imageUrl:
-          type:
-          - string
-          - 'null'
-          format: url
-          description: The URL of the part image that PartsTech uses for the part.
-          example: https://image.partstech.com/d1/images/e4/11/71/w110_e411711499973c7640e852e84ed20fca0cd5c9d2.png
-        partstechCatalogURL:
-          type:
-          - string
-          - 'null'
-          format: url
-          description: The URL of the part's description on PartsTech.
-          example: https://punchout.partstech.com/Motorcraft-Engine-Oil-Filter/details/BBRH-FL-500-S?part_term=5340
-        availability:
-          type: boolean
-          example: true
-          description: Returns true if the part is available at the time of quoting.
-        vehicleId:
-          type:
-          - integer
-          - 'null'
-          description: PartsTech's ID for a vehicle.
-        vehicleName:
-          type:
-          - string
-          - 'null'
-          description: Name of the vehicle selected for fitment during the PartsTech session. Typically consists of year, make, model, and engine.
-        brand:
-          $ref: '#/components/schemas/Brand'
-        taxonomy:
-          $ref: '#/components/schemas/ResponseTaxonomy'
-        partCategory:
-          $ref: '#/components/schemas/PartCategory'
-        searchedAsPartNumber:
-          type:
-          - string
-          - 'null'
-        attributes:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Attribute'
-    BriefSupplier:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
-        name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
-    ResponseTaxonomy:
-      type:
-      - object
-      - 'null'
-      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
-      required:
-      - partTypeId
-      properties:
-        partTypeId:
-          type: integer
-          example: 14216
-          description: The ID of a part type from the Autocare Association's PCdb.
-        partTypeName:
-          type:
-          - string
-          - 'null'
-          example: Air Filter Set
-          description: The name of a part type.
-        partTypeDescription:
-          type:
-          - string
-          - 'null'
-          example: Initial fill additive for turbochargers.
-          description: The description of a part type.
-        categoryId:
-          type:
-          - integer
-          - 'null'
-          example: 12
-          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
-        categoryName:
-          type:
-          - string
-          - 'null'
-          example: Air and Fuel Delivery
-          description: The name of a category.
-        subCategoryId:
-          type: integer
-          example: 153
-          description: The ID of a subcategory from the Autocare Association's PCdb.
-        subCategoryName:
-          type:
-          - string
-          - 'null'
-          example: Filters
-          description: The name of a subcategory.
-      example:
-        partTypeId: 8852
-        partTypeName: Windshield Wiper Blade
-        categoryId: 22
-        categoryName: Wiper and Washer
-        subCategoryId: 236
-        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    OrderStore:
-      description: Store Data for Unpaid Orders
-      allOf:
-      - $ref: '#/components/schemas/BriefStore'
-      - type: object
-        required:
-        - address
-        properties:
-          address:
-            $ref: '#/components/schemas/Address'
-    Address:
-      type: object
-      description: Address of the user's shop
-      required:
-      - address1
-      - city
-      - state
-      - zipCode
-      properties:
-        address1:
-          type: string
-          example: 1 Broadway
-        address2:
-          type:
-          - string
-          - 'null'
-          example: 14th Floor
-        city:
-          type: string
-          example: Cambridge
-        state:
-          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-          type: string
-          minLength: 2
-          maxLength: 2
-          pattern: \w{2,2}
-          example: MA
-        zipCode:
-          type: string
-          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
-          example: '02142'
-        country:
-          description: ISO 3166-1 alpha-2
-          type: string
-          minLength: 2
-          maxLength: 2
-          pattern: \w{2,2}
-          default: US
-          example: US
-    PunchoutLaborItem:
-      type: object
-      required:
-      - laborItemId
-      - source
-      - name
-      - notes
-      - skill
-      - requiredSkill
-      - hours
-      - price
-      - maintenance
-      properties:
-        laborItemId:
-          type: string
-        source:
-          type: string
-          enum:
-          - MOTOR
-          - MITCHELL
-          - CUSTOM
-          example: MOTOR
-          description: Source of labor application. Motor, mitchell APIs or manually entered data.
-        name:
-          type: string
-          description: Name of labor application
-        notes:
-          type:
-          - string
-          - 'null'
-          description: Nots for labor application
-        skill:
-          type: string
-          description: Required skill
-        requiredSkill:
-          type: object
-          description: Required skill
-          required:
-          - code
-          - name
-          - description
-          properties:
-            code:
-              type: string
-            name:
-              type: string
-            description:
-              type: string
-        hours:
-          type: number
-          format: float
-          description: Required hours
-        price:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Hours * labor rate
-        vehicleId:
-          type:
-          - integer
-          - 'null'
-          description: PartsTech's ID for a vehicle.
-        partTypeId:
-          type:
-          - integer
-          - 'null'
-          description: The ID of a part type from the Autocare Association's PCdb.
-        taxonomy:
-          type:
-          - object
-          - 'null'
-          description: Motor Taxonomy
-          required:
-          - name
-          - action
-          properties:
-            taxonomyId:
-              type:
-              - integer
-              - 'null'
-            name:
-              type: string
-            action:
-              type: string
-        maintenance:
-          type:
-          - object
-          - 'null'
-          description: Additional maintenance schedules data
-          required:
-          - severity
-          properties:
-            severity:
-              type: string
-              enum:
-              - Severe
-              - Normal
-          oneOf:
-          - type: object
-            properties:
-              interval:
-                type: object
-                required:
-                - interval
-                - type
-                properties:
-                  value:
-                    type: integer
-                    example: 10000
-                  type:
-                    type: string
-                    enum:
-                    - Miles
-                    - Months
-          - type: object
-            properties:
-              indicator:
-                type: object
-                description: Maintenance based on an indicator
-                required:
-                - name
-                properties:
-                  name:
-                    type: string
-                    example: Service 1
   securitySchemes:
     bearerAuth:
       type: http

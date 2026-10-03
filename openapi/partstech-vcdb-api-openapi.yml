@@ -468,18 +468,18 @@ components:
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 21
-    region:
-      name: region
+    year:
+      name: year
       in: query
-      description: Region
+      description: Year
       schema:
-        type: string
-        enum:
-        - US
-        - CA
-        - MX
+        type: integer
+        minLength: 4
+        maxLength: 4
+        pattern: \d{4,4}
       required: false
-      example: US
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2017
     submodel:
       name: submodel
       in: query
@@ -502,18 +502,6 @@ components:
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 5486
-    year:
-      name: year
-      in: query
-      description: Year
-      schema:
-        type: integer
-        minLength: 4
-        maxLength: 4
-        pattern: \d{4,4}
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2017
     model:
       name: model
       in: query
@@ -524,15 +512,19 @@ components:
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 105
-  schemas:
-    Regions:
-      description: Array of country codes ISO 3166-1 alpha-2
-      type: array
-      items:
+    region:
+      name: region
+      in: query
+      description: Region
+      schema:
         type: string
-      example:
-      - US
-      - CA
+        enum:
+        - US
+        - CA
+        - MX
+      required: false
+      example: US
+  schemas:
     ResponseVehicle:
       type:
       - object
@@ -606,6 +598,14 @@ components:
         deprecated:
           type: boolean
           example: false
+    Regions:
+      description: Array of country codes ISO 3166-1 alpha-2
+      type: array
+      items:
+        type: string
+      example:
+      - US
+      - CA
     EngineParams:
       title: Engine params
       type: object

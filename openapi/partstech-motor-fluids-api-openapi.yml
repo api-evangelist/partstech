@@ -110,44 +110,6 @@ paths:
           $ref: '#/components/responses/VehicleNotFound'
 components:
   schemas:
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    Grade:
-      type: object
-      description: The grade of the item.
-      required:
-      - code
-      - description
-      properties:
-        code:
-          type: string
-          description: The code representing the grade.
-        description:
-          type: string
-          description: Description of the grade.
     PartNumberSearchParams:
       description: 'A search parameters for the search by PartNumber.
 
@@ -171,6 +133,100 @@ components:
             type: string
           example:
           - 12345
+    FluidsApplication:
+      type: object
+      required:
+      - applicationId
+      - name
+      - attributes
+      - taxonomy
+      properties:
+        applicationId:
+          type: integer
+          format: int32
+          description: The application ID of an application record.
+        name:
+          type: string
+          description: The name of application.
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of application.
+        position:
+          type:
+          - object
+          - 'null'
+          required:
+          - name
+          - pcdbPositionID
+          properties:
+            name:
+              type: string
+            pcdbPositionID:
+              type: integer
+        taxonomy:
+          type: object
+          required:
+          - id
+          - name
+          - action
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            action:
+              type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - name
+            properties:
+              id:
+                type: integer
+                description: PCDB identifier
+              name:
+                type: string
+                description: PCDB name
+              text:
+                type:
+                - string
+                - 'null'
+                description: Full part name
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FluidsDetailsItem'
+          description: Items that belong to this fluid detail.
+        capacities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capacity'
+          description: Capacities associated with this fluid.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
     PlateSearchParams:
       description: 'A search parameters for the search by Plate.
 
@@ -205,6 +261,20 @@ components:
             plate:
               type: string
               example: SomePlate
+    Capacity:
+      type: object
+      required:
+      - name
+      - items
+      properties:
+        name:
+          type: string
+          description: The name of the capacity.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapacityItem'
+          description: Items related to this capacity.
     SearchParams:
       type: object
       oneOf:
@@ -212,6 +282,143 @@ components:
       - $ref: '#/components/schemas/VinSearchParams'
       - $ref: '#/components/schemas/PlateSearchParams'
       - $ref: '#/components/schemas/PartNumberSearchParams'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    ExtendedParameter:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: The name of the parameter.
+        value:
+          type: string
+          description: The value of the parameter.
+    Grade:
+      type: object
+      description: The grade of the item.
+      required:
+      - code
+      - description
+      properties:
+        code:
+          type: string
+          description: The code representing the grade.
+        description:
+          type: string
+          description: Description of the grade.
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
     CapacityItem:
       type: object
       required:
@@ -306,213 +513,6 @@ components:
           items:
             type: string
           description: Notes related to this details.
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineId:
-          type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    ExtendedParameter:
-      type: object
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: The name of the parameter.
-        value:
-          type: string
-          description: The value of the parameter.
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    FluidsApplication:
-      type: object
-      required:
-      - applicationId
-      - name
-      - attributes
-      - taxonomy
-      properties:
-        applicationId:
-          type: integer
-          format: int32
-          description: The application ID of an application record.
-        name:
-          type: string
-          description: The name of application.
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of application.
-        position:
-          type:
-          - object
-          - 'null'
-          required:
-          - name
-          - pcdbPositionID
-          properties:
-            name:
-              type: string
-            pcdbPositionID:
-              type: integer
-        taxonomy:
-          type: object
-          required:
-          - id
-          - name
-          - action
-          properties:
-            id:
-              type: integer
-            name:
-              type: string
-            action:
-              type: string
-        attributes:
-          type: array
-          items:
-            type: object
-            required:
-            - id
-            - name
-            properties:
-              id:
-                type: integer
-                description: PCDB identifier
-              name:
-                type: string
-                description: PCDB name
-              text:
-                type:
-                - string
-                - 'null'
-                description: Full part name
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/FluidsDetailsItem'
-          description: Items that belong to this fluid detail.
-        capacities:
-          type: array
-          items:
-            $ref: '#/components/schemas/Capacity'
-          description: Capacities associated with this fluid.
-    Capacity:
-      type: object
-      required:
-      - name
-      - items
-      properties:
-        name:
-          type: string
-          description: The name of the capacity.
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CapacityItem'
-          description: Items related to this capacity.
   responses:
     UnsupportedVehicle:
       description: Bad Request

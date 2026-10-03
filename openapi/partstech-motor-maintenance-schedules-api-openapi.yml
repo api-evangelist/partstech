@@ -248,247 +248,6 @@ paths:
           $ref: '#/components/responses/VehicleNotFound'
 components:
   schemas:
-    Severity:
-      type: string
-      enum:
-      - Severe
-      - Normal
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
-      properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
-    MaintenanceSchedulesDetails:
-      type: object
-      title: Maintenance Schedules details
-      description: 'Maintenance Schedules details.
-
-        '
-      required:
-      - applications
-      properties:
-        applications:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/MaintenanceSchedulesApplication'
-    IntervalType:
-      type: string
-      enum:
-      - Miles
-      - Months
-      default: Months
-    LaborTime:
-      type: object
-      required:
-      - laborTime
-      - warrantyLaborTime
-      properties:
-        laborTime:
-          type: number
-          format: float
-          description: MOTOR estimated time to perform the operation
-        laborTimeAverage:
-          type: number
-          format: float
-          description: Average labor time for the operation across all vehicles
-        laborTimeDescription:
-          type: string
-        warrantyLaborTime:
-          type: number
-          format: float
-          description: OEM warranty time for performing the operation
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
-
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - plate
-      properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
-    SearchParams:
-      type: object
-      oneOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartNumberSearchParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineId:
-          type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     MaintenanceSchedulesApplication:
       type: object
       required:
@@ -586,6 +345,247 @@ components:
                 - string
                 - 'null'
                 description: Full part name
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    SearchParams:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartNumberSearchParams'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    Severity:
+      type: string
+      enum:
+      - Severe
+      - Normal
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    MaintenanceSchedulesDetails:
+      type: object
+      title: Maintenance Schedules details
+      description: 'Maintenance Schedules details.
+
+        '
+      required:
+      - applications
+      properties:
+        applications:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/MaintenanceSchedulesApplication'
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    IntervalType:
+      type: string
+      enum:
+      - Miles
+      - Months
+      default: Months
+    LaborTime:
+      type: object
+      required:
+      - laborTime
+      - warrantyLaborTime
+      properties:
+        laborTime:
+          type: number
+          format: float
+          description: MOTOR estimated time to perform the operation
+        laborTimeAverage:
+          type: number
+          format: float
+          description: Average labor time for the operation across all vehicles
+        laborTimeDescription:
+          type: string
+        warrantyLaborTime:
+          type: number
+          format: float
+          description: OEM warranty time for performing the operation
   responses:
     UnsupportedVehicle:
       description: Bad Request

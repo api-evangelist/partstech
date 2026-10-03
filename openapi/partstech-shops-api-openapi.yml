@@ -161,32 +161,6 @@ components:
         demo:
           type: boolean
           example: false
-    BriefShop:
-      type: object
-      required:
-      - id
-      - name
-      - phone
-      - demo
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech ID of a shop.
-        name:
-          type: string
-          example: Mechanic Shop
-        phone:
-          type: string
-          example: (777) 777-7777 x111
-        cellphone:
-          type:
-          - string
-          - 'null'
-          example: (777) 777-7777 x111
-        demo:
-          type: boolean
-          example: false
     EntireShop:
       allOf:
       - $ref: '#/components/schemas/BriefShop'
@@ -247,6 +221,32 @@ components:
           pattern: \w{2,2}
           default: US
           example: US
+    BriefShop:
+      type: object
+      required:
+      - id
+      - name
+      - phone
+      - demo
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech ID of a shop.
+        name:
+          type: string
+          example: Mechanic Shop
+        phone:
+          type: string
+          example: (777) 777-7777 x111
+        cellphone:
+          type:
+          - string
+          - 'null'
+          example: (777) 777-7777 x111
+        demo:
+          type: boolean
+          example: false
   parameters:
     perPage:
       name: perPage

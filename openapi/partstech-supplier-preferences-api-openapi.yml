@@ -290,31 +290,6 @@ components:
           type: integer
           example: 5904 - Springfield, MA
           description: The name of a store
-    PreferredStore:
-      allOf:
-      - $ref: '#/components/schemas/BriefStore'
-      - type: object
-        required:
-        - sellerId
-        properties:
-          sellerId:
-            type:
-            - string
-            - 'null'
-            example: asdasdb
-    SupplierPreferenceCredentialsRequest:
-      type: array
-      items:
-        type: object
-        description: Supplier preference credential request
-        required:
-        - name
-        - value
-        properties:
-          name:
-            type: string
-          value:
-            type: string
     SupplierPreferenceCredentialsResponse:
       type: object
       description: Credential
@@ -335,6 +310,19 @@ components:
         type:
           type: string
           description: Type of the credential. Text or Password.
+    SupplierPreferenceCredentialsRequest:
+      type: array
+      items:
+        type: object
+        description: Supplier preference credential request
+        required:
+        - name
+        - value
+        properties:
+          name:
+            type: string
+          value:
+            type: string
     BriefSupplier:
       type: object
       required:
@@ -349,6 +337,18 @@ components:
           type: string
           example: Advance Auto Parts
           description: The name of a supplier.
+    PreferredStore:
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+            example: asdasdb
   responses:
     SupplierPreferences:
       description: OK

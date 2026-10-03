@@ -170,27 +170,33 @@ components:
                         type: integer
                       name:
                         type: string
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
 
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+        It consists on Vehicle arameters and Part Types or Keyword.
 
 
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vin
+      - vehicleParams
       properties:
-        vin:
-          type: string
-          example: SomeVIN
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    SearchParams:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartNumberSearchParams'
     Operation:
       type: object
       required:
@@ -306,19 +312,6 @@ components:
         isMatch:
           type: boolean
           description: Indicates whether the operation matches the request criteria.
-    PartTypeLaborParams:
-      type: object
-      required:
-      - partTypeIds
-      properties:
-        partTypeIds:
-          type: array
-          minItems: 1
-          maxItems: 10
-          items:
-            type: integer
-          example:
-          - 1852
     VehicleParamsByEngineIdAndEngineParams:
       title: Vehicle params with engineId and engine params
       description: 'Vehicle parameters with Engine ID and Engine parameters.
@@ -350,22 +343,71 @@ components:
           example: 12344
         engineParams:
           $ref: '#/components/schemas/EngineParams'
-    TaxonomyLaborParams:
+    PartTypeLaborParams:
       type: object
       required:
-      - taxonomyIds
+      - partTypeIds
       properties:
-        taxonomyIds:
+        partTypeIds:
           type: array
           minItems: 1
           maxItems: 10
           items:
             type: integer
           example:
-          - 1
-          - 5
-          - 7
-          - 8
+          - 1852
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
     ExpandedTaxonomyLaborParams:
       type: object
       required:
@@ -390,6 +432,92 @@ components:
           - 6
           - 7
           - 10
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    LaborOperationsResponse:
+      type: array
+      minItems: 0
+      items:
+        type: object
+        required:
+        - id
+        - name
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          operations:
+            type: array
+            items:
+              $ref: '#/components/schemas/Operation'
+    SearchLaborParams:
+      type: object
+      required:
+      - searchTerm
+      properties:
+        searchTerm:
+          type: string
+          minLength: 3
+    TaxonomyLaborParams:
+      type: object
+      required:
+      - taxonomyIds
+      properties:
+        taxonomyIds:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: integer
+          example:
+          - 1
+          - 5
+          - 7
+          - 8
+    LaborOperationsRequest:
+      type: object
+      required:
+      - searchParams
+      - laborParams
+      properties:
+        searchParams:
+          oneOf:
+          - $ref: '#/components/schemas/VehicleSearchParams'
+          - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+          - $ref: '#/components/schemas/VinSearchParams'
+          - $ref: '#/components/schemas/PlateSearchParams'
+        laborParams:
+          oneOf:
+          - $ref: '#/components/schemas/ExpandedTaxonomyLaborParams'
+          - $ref: '#/components/schemas/TaxonomyLaborParams'
+          - $ref: '#/components/schemas/PartTypeLaborParams'
+          - $ref: '#/components/schemas/SearchLaborParams'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     LaborGroupsRequest:
       type: object
       required:
@@ -401,10 +529,6 @@ components:
           - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
           - $ref: '#/components/schemas/VinSearchParams'
           - $ref: '#/components/schemas/PlateSearchParams'
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     EngineParams:
       title: Engine params
       type: object
@@ -446,159 +570,7 @@ components:
           type: integer
           example: 1
           description: PartsTech's ID for a vehicle.
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    SearchLaborParams:
-      type: object
-      required:
-      - searchTerm
-      properties:
-        searchTerm:
-          type: string
-          minLength: 3
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
-      properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
-    LaborOperationsRequest:
-      type: object
-      required:
-      - searchParams
-      - laborParams
-      properties:
-        searchParams:
-          oneOf:
-          - $ref: '#/components/schemas/VehicleSearchParams'
-          - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-          - $ref: '#/components/schemas/VinSearchParams'
-          - $ref: '#/components/schemas/PlateSearchParams'
-        laborParams:
-          oneOf:
-          - $ref: '#/components/schemas/ExpandedTaxonomyLaborParams'
-          - $ref: '#/components/schemas/TaxonomyLaborParams'
-          - $ref: '#/components/schemas/PartTypeLaborParams'
-          - $ref: '#/components/schemas/SearchLaborParams'
-    SearchParams:
-      type: object
-      oneOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartNumberSearchParams'
-    LaborOperationsResponse:
-      type: array
-      minItems: 0
-      items:
-        type: object
-        required:
-        - id
-        - name
-        properties:
-          id:
-            type: integer
-          name:
-            type: string
-          operations:
-            type: array
-            items:
-              $ref: '#/components/schemas/Operation'
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-  headers:
-    MotorComplianceLink:
-      description: 'Labor, maintenance schedules, fluids, and specifications data provided by MOTOR.
-
-        Link to MOTOR''s OEM Compliance Requirements documentation.
-
-        '
-      schema:
-        type: string
-        example: <https://www.motor.com/oem-compliance-requirements/>; rel="compliance"
   responses:
-    VehicleNotFound:
-      description: Not Found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: object
-                properties:
-                  code:
-                    type: string
-                  message:
-                    type: string
-            example:
-              error:
-                code: NotFound
-                message: Vehicle was not found
     UnsupportedVehicle:
       description: Bad Request
       content:
@@ -617,6 +589,34 @@ components:
               error:
                 code: UnsupportedVehicle
                 message: MOTOR does not currently support data for Canadian vehicles.
+    VehicleNotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+            example:
+              error:
+                code: NotFound
+                message: Vehicle was not found
+  headers:
+    MotorComplianceLink:
+      description: 'Labor, maintenance schedules, fluids, and specifications data provided by MOTOR.
+
+        Link to MOTOR''s OEM Compliance Requirements documentation.
+
+        '
+      schema:
+        type: string
+        example: <https://www.motor.com/oem-compliance-requirements/>; rel="compliance"
   securitySchemes:
     bearerAuth:
       type: http

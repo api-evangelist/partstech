@@ -193,6 +193,21 @@ components:
         demo:
           type: boolean
           example: false
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
     EntireShop:
       allOf:
       - $ref: '#/components/schemas/BriefShop'
@@ -214,47 +229,6 @@ components:
             $ref: '#/components/schemas/Address'
           billingAddress:
             $ref: '#/components/schemas/Address'
-    BriefShop:
-      type: object
-      required:
-      - id
-      - name
-      - phone
-      - demo
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech ID of a shop.
-        name:
-          type: string
-          example: Mechanic Shop
-        phone:
-          type: string
-          example: (777) 777-7777 x111
-        cellphone:
-          type:
-          - string
-          - 'null'
-          example: (777) 777-7777 x111
-        demo:
-          type: boolean
-          example: false
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
     Address:
       type: object
       description: Address of the user's shop
@@ -294,6 +268,32 @@ components:
           pattern: \w{2,2}
           default: US
           example: US
+    BriefShop:
+      type: object
+      required:
+      - id
+      - name
+      - phone
+      - demo
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech ID of a shop.
+        name:
+          type: string
+          example: Mechanic Shop
+        phone:
+          type: string
+          example: (777) 777-7777 x111
+        cellphone:
+          type:
+          - string
+          - 'null'
+          example: (777) 777-7777 x111
+        demo:
+          type: boolean
+          example: false
   responses:
     InvalidAddressError:
       description: Address is invalid

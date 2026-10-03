@@ -122,21 +122,6 @@ paths:
           $ref: '#/components/responses/PlateDecodeError'
 components:
   responses:
-    VinDecodeError:
-      description: VinDecodeError
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
-            example:
-              error:
-                code: VinDecodeError
-                message: We cannot identify your vin number
     PlateDecodeError:
       description: PlateDecodeError
       content:
@@ -152,6 +137,21 @@ components:
               error:
                 code: PlateDecodeError
                 message: We cannot identify your license plate number
+    VinDecodeError:
+      description: VinDecodeError
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+            example:
+              error:
+                code: VinDecodeError
+                message: We cannot identify your vin number
   schemas:
     Error:
       title: Error Definition

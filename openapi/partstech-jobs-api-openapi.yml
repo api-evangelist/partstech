@@ -98,6 +98,18 @@ paths:
                         propertyName: type
 components:
   parameters:
+    direction:
+      name: direction
+      in: query
+      description: Direction
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        default: ASC
+      required: false
+      example: ASC
     perPage:
       name: perPage
       in: query
@@ -111,18 +123,6 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 50
       description: 'Records per request. Default: 50'
-    direction:
-      name: direction
-      in: query
-      description: Direction
-      schema:
-        type: string
-        enum:
-        - ASC
-        - DESC
-        default: ASC
-      required: false
-      example: ASC
     page:
       name: page
       in: query
@@ -132,22 +132,6 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 2
   schemas:
-    PartTypeTaskResponse:
-      type: object
-      required:
-      - type
-      properties:
-        type:
-          type: string
-          enum:
-          - PART_TYPE
-        partType:
-          $ref: '#/components/schemas/ResponsePartType'
-        positions:
-          description: List of positions assigned for the part type.
-          type: array
-          items:
-            type: string
     ResponsePartType:
       type: object
       required:
@@ -186,6 +170,22 @@ components:
         partTypeName: Voltage Regulator Screw
         description: Mounting screw for the voltage regulator.
         application: FITTED
+    PartTypeTaskResponse:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - PART_TYPE
+        partType:
+          $ref: '#/components/schemas/ResponsePartType'
+        positions:
+          description: List of positions assigned for the part type.
+          type: array
+          items:
+            type: string
   securitySchemes:
     bearerAuth:
       type: http

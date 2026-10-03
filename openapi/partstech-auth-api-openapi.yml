@@ -111,13 +111,115 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidToken'
 components:
-  responses:
-    InvalidRequest:
+  schemas:
+    PartnerCredentials:
+      type: object
+      description: Partner Auth Credentials
+      required:
+      - partner
+      properties:
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        partner:
+          id: partstech_partner
+          key: Partner API key
+    UserCredentials:
+      type: object
+      description: User And Partner Auth Credentials
+      required:
+      - user
+      - partner
+      properties:
+        user:
+          $ref: '#/components/schemas/IdentityKey'
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        user:
+          id: partstech_user
+          key: User API key
+        partner:
+          id: partstech_partner
+          key: Partner API key
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+    InvalidRequestError:
       description: Malformed request. The request body is not parse-able or with invalid content.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        validationErrors:
+          type: array
+          items:
+            type: string
+      example:
+        error:
+          code: InvalidRequestSyntax
+          message: Cannot parse request. Invalid data format
+        validationErrors:
+        - credentials.user.key - This value should not be blank.
+        - credentials.user.id - This value should be of type string.
+        - credentials.partner - This value should not be blank.
+    IdentityKey:
+      type: object
+      description: User or Partner ID and API Key
+      required:
+      - id
+      - key
+      properties:
+        id:
+          type: string
+          description: User or Partner ID
+          example: username
+        key:
+          type: string
+          description: User or Partner API key
+          example: APIkey
+  responses:
+    InvalidToken:
+      description: Invalid Token.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InvalidRequestError'
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                title: Error details
+                type: object
+                required:
+                - code
+                - message
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - InvalidToken
+                    - ExpiredToken
+                  message:
+                    type: string
+            example:
+              error:
+                code: InvalidToken
+                message: Invalid token was provided
     Tokens:
       description: OK
       content:
@@ -157,74 +259,6 @@ components:
                 type: string
                 description: The Partner Id of the partner provided in the request.
                 example: partstech_partner
-    InvalidToken:
-      description: Invalid Token.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                title: Error details
-                type: object
-                required:
-                - code
-                - message
-                properties:
-                  code:
-                    type: string
-                    enum:
-                    - InvalidToken
-                    - ExpiredToken
-                  message:
-                    type: string
-            example:
-              error:
-                code: InvalidToken
-                message: Invalid token was provided
-    AuthenticationFailed:
-      description: Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                title: Error details
-                type: object
-                required:
-                - code
-                - message
-                properties:
-                  code:
-                    type: string
-                  message:
-                    type: string
-          examples:
-            ExpiredToken:
-              value:
-                error:
-                  code: InvalidToken
-                  message: Provided token is expired
-            InvalidToken:
-              value:
-                error:
-                  code: InvalidToken
-                  message: Provided token is invalid
-            UserAuthenticationFailed:
-              value:
-                error:
-                  code: UserAuthenticationFailed
-                  message: Incorrect user id or user key
-            PartnerAuthenticationFailed:
-              value:
-                error:
-                  code: PartnerAuthenticationFailed
-                  message: Incorrect partner id or partner key
     InternalServerError:
       description: Internal Server Error.
       content:
@@ -286,87 +320,53 @@ components:
                 error:
                   code: IncorrectMode
                   message: Incorrect user for test mode
-  schemas:
-    InvalidRequestError:
+    AuthenticationFailed:
+      description: Unauthorized. The request requires user or partner credentials or bearer token. Also used for invalid credentials or bearer token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                title: Error details
+                type: object
+                required:
+                - code
+                - message
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+          examples:
+            ExpiredToken:
+              value:
+                error:
+                  code: InvalidToken
+                  message: Provided token is expired
+            InvalidToken:
+              value:
+                error:
+                  code: InvalidToken
+                  message: Provided token is invalid
+            UserAuthenticationFailed:
+              value:
+                error:
+                  code: UserAuthenticationFailed
+                  message: Incorrect user id or user key
+            PartnerAuthenticationFailed:
+              value:
+                error:
+                  code: PartnerAuthenticationFailed
+                  message: Incorrect partner id or partner key
+    InvalidRequest:
       description: Malformed request. The request body is not parse-able or with invalid content.
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          $ref: '#/components/schemas/Error'
-        validationErrors:
-          type: array
-          items:
-            type: string
-      example:
-        error:
-          code: InvalidRequestSyntax
-          message: Cannot parse request. Invalid data format
-        validationErrors:
-        - credentials.user.key - This value should not be blank.
-        - credentials.user.id - This value should be of type string.
-        - credentials.partner - This value should not be blank.
-    PartnerCredentials:
-      type: object
-      description: Partner Auth Credentials
-      required:
-      - partner
-      properties:
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        partner:
-          id: partstech_partner
-          key: Partner API key
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
-    UserCredentials:
-      type: object
-      description: User And Partner Auth Credentials
-      required:
-      - user
-      - partner
-      properties:
-        user:
-          $ref: '#/components/schemas/IdentityKey'
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        user:
-          id: partstech_user
-          key: User API key
-        partner:
-          id: partstech_partner
-          key: Partner API key
-    IdentityKey:
-      type: object
-      description: User or Partner ID and API Key
-      required:
-      - id
-      - key
-      properties:
-        id:
-          type: string
-          description: User or Partner ID
-          example: username
-        key:
-          type: string
-          description: User or Partner API key
-          example: APIkey
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidRequestError'
   securitySchemes:
     bearerAuth:
       type: http

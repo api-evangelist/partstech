@@ -57,22 +57,26 @@ paths:
                       $ref: '#/components/schemas/M1Vehicle'
 components:
   schemas:
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
 
-        It consists on Vehicle ID and Part Types or Keyword.
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleId
+      - vehicleParams
       properties:
-        vehicleId:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
     M1Vehicle:
       type: object
       properties:
@@ -139,27 +143,26 @@ components:
             plate:
               type: string
               example: SomePlate
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
 
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+        It consists on Vehicle ID and Part Types or Keyword.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vin
+      - vehicleId
       properties:
-        vin:
-          type: string
-          example: SomeVIN
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
     VehicleParamsByEngineIdAndEngineParams:
       title: Vehicle params with engineId and engine params
       description: 'Vehicle parameters with Engine ID and Engine parameters.
@@ -191,26 +194,52 @@ components:
           example: 12344
         engineParams:
           $ref: '#/components/schemas/EngineParams'
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
 
-        It consists on Vehicle arameters and Part Types or Keyword.
+        It consists on VIN and Part Types or Keyword.
 
 
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
 
 
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleParams
+      - vin
       properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
+        vin:
+          type: string
+          example: SomeVIN
     VehicleParamsByEngineConfigId:
       title: Vehicle params with engineConfigId
       description: 'Vehicle parameters with Engine Config ID.
@@ -242,35 +271,6 @@ components:
         engineConfigId:
           type: integer
           example: 34
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
   securitySchemes:
     bearerAuth:
       type: http

@@ -96,6 +96,14 @@ paths:
                 $ref: '#/components/schemas/Brand'
 components:
   parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
     perPage:
       name: perPage
       in: query
@@ -109,14 +117,6 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 50
       description: 'Records per request. Default: 50'
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
   schemas:
     Brand:
       type: object

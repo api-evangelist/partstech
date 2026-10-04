@@ -163,6 +163,17 @@ paths:
           $ref: '#/components/responses/VehicleNotFound'
 components:
   schemas:
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    SearchParams:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartNumberSearchParams'
     PartNumberSearchParams:
       description: 'A search parameters for the search by PartNumber.
 
@@ -186,26 +197,27 @@ components:
             type: string
           example:
           - 12345
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
 
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+        It consists on VIN and Part Types or Keyword.
 
 
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleParams
+      - vin
       properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
+        vin:
+          type: string
+          example: SomeVIN
     PlateSearchParams:
       description: 'A search parameters for the search by Plate.
 
@@ -240,42 +252,6 @@ components:
             plate:
               type: string
               example: SomePlate
-    SearchParams:
-      type: object
-      oneOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartNumberSearchParams'
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
     VehicleParamsByEngineIdAndEngineParams:
       title: Vehicle params with engineId and engine params
       description: 'Vehicle parameters with Engine ID and Engine parameters.
@@ -307,58 +283,31 @@ components:
           example: 12344
         engineParams:
           $ref: '#/components/schemas/EngineParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
+    EngineParams:
+      title: Engine params
       type: object
       required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
       properties:
-        yearId:
+        engineVinId:
           type: integer
-          example: 2015
-        makeId:
+          example: 134
+        engineDesignationId:
           type: integer
-          example: 65
-        modelId:
+          example: 344
+        engineVersionId:
           type: integer
-          example: 123
-        subModelId:
+          example: 342
+        fuelTypeId:
           type: integer
-          example: 234
-        engineConfigId:
+          example: 54
+        cylinderHeadTypeId:
           type: integer
-          example: 34
+          example: 25243
     SpecificationDetails:
       type: object
       required:
@@ -487,25 +436,58 @@ components:
               type: string
             action:
               type: string
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
   responses:
-    UnsupportedVehicle:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: object
-                properties:
-                  code:
-                    type: string
-                  message:
-                    type: string
-            example:
-              error:
-                code: UnsupportedVehicle
-                message: MOTOR does not currently support data for Canadian vehicles.
     VehicleNotFound:
       description: Not Found
       content:
@@ -524,6 +506,24 @@ components:
               error:
                 code: NotFound
                 message: Vehicle was not found
+    UnsupportedVehicle:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+            example:
+              error:
+                code: UnsupportedVehicle
+                message: MOTOR does not currently support data for Canadian vehicles.
   headers:
     MotorComplianceLink:
       description: 'Labor, maintenance schedules, fluids, and specifications data provided by MOTOR.

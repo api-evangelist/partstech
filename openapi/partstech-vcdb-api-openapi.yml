@@ -458,6 +458,50 @@ paths:
                 example: 2019-04-15
 components:
   parameters:
+    engine:
+      name: engine
+      in: query
+      description: Base Engine ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 5486
+    region:
+      name: region
+      in: query
+      description: Region
+      schema:
+        type: string
+        enum:
+        - US
+        - CA
+        - MX
+      required: false
+      example: US
+    submodel:
+      name: submodel
+      in: query
+      description: Submodel ID
+      schema:
+        type:
+        - integer
+        - 'null'
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 113
+    model:
+      name: model
+      in: query
+      description: Model ID
+      schema:
+        type: integer
+        pattern: \d+
+      required: false
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 105
     make:
       name: make
       in: query
@@ -480,50 +524,6 @@ components:
       required: false
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 2017
-    submodel:
-      name: submodel
-      in: query
-      description: Submodel ID
-      schema:
-        type:
-        - integer
-        - 'null'
-        pattern: \d+
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 113
-    engine:
-      name: engine
-      in: query
-      description: Base Engine ID
-      schema:
-        type: integer
-        pattern: \d+
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 5486
-    model:
-      name: model
-      in: query
-      description: Model ID
-      schema:
-        type: integer
-        pattern: \d+
-      required: false
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 105
-    region:
-      name: region
-      in: query
-      description: Region
-      schema:
-        type: string
-        enum:
-        - US
-        - CA
-        - MX
-      required: false
-      example: US
   schemas:
     ResponseVehicle:
       type:
@@ -598,14 +598,6 @@ components:
         deprecated:
           type: boolean
           example: false
-    Regions:
-      description: Array of country codes ISO 3166-1 alpha-2
-      type: array
-      items:
-        type: string
-      example:
-      - US
-      - CA
     EngineParams:
       title: Engine params
       type: object
@@ -631,6 +623,14 @@ components:
         cylinderHeadTypeId:
           type: integer
           example: 25243
+    Regions:
+      description: Array of country codes ISO 3166-1 alpha-2
+      type: array
+      items:
+        type: string
+      example:
+      - US
+      - CA
   securitySchemes:
     bearerAuth:
       type: http

@@ -121,6 +121,22 @@ paths:
         '400':
           $ref: '#/components/responses/PlateDecodeError'
 components:
+  schemas:
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
   responses:
     PlateDecodeError:
       description: PlateDecodeError
@@ -152,22 +168,6 @@ components:
               error:
                 code: VinDecodeError
                 message: We cannot identify your vin number
-  schemas:
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
   securitySchemes:
     bearerAuth:
       type: http

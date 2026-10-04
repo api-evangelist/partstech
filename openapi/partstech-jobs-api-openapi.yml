@@ -132,6 +132,22 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 2
   schemas:
+    PartTypeTaskResponse:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - PART_TYPE
+        partType:
+          $ref: '#/components/schemas/ResponsePartType'
+        positions:
+          description: List of positions assigned for the part type.
+          type: array
+          items:
+            type: string
     ResponsePartType:
       type: object
       required:
@@ -170,22 +186,6 @@ components:
         partTypeName: Voltage Regulator Screw
         description: Mounting screw for the voltage regulator.
         application: FITTED
-    PartTypeTaskResponse:
-      type: object
-      required:
-      - type
-      properties:
-        type:
-          type: string
-          enum:
-          - PART_TYPE
-        partType:
-          $ref: '#/components/schemas/ResponsePartType'
-        positions:
-          description: List of positions assigned for the part type.
-          type: array
-          items:
-            type: string
   securitySchemes:
     bearerAuth:
       type: http

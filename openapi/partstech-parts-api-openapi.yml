@@ -290,6 +290,132 @@ paths:
           description: No content. Fitment was not found.
 components:
   schemas:
+    LaborPartParams:
+      type: object
+      properties:
+        labor:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/ResponsePartLabor'
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    QuoteParams:
+      type: object
+      required:
+      - status
+      - supplier
+      - store
+      - lineCardId
+      - price
+      properties:
+        status:
+          type: string
+          enum:
+          - IN_STOCK
+          - OUT_OF_STOCK
+          - SPECIAL_ORDER
+          - BACK_ORDER
+          - CHECK_AVAILABILITY
+          description: 'CHECK_AVAILABILITY - Part availability can be received only through ["Get Part (with request body)"](#operation/getPartWithRequestBody) with `storeId` provided. This applies to certain Tire suppliers that require branch selection.
+
+            '
+        supplier:
+          $ref: '#/components/schemas/CartSearchSupplier'
+        store:
+          $ref: '#/components/schemas/BriefStore'
+        lineCardId:
+          type: integer
+          example: 123
+        price:
+          $ref: '#/components/schemas/PartPrice'
+        quantity:
+          type: integer
+        backOrder:
+          type: boolean
+        storesAvailability:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            minProperties: 2
+            required:
+            - specificName
+            - quantity
+            properties:
+              specificName:
+                type: string
+                example: In network
+              store:
+                $ref: '#/components/schemas/BriefStore'
+              quantity:
+                type: integer
+                example: 3
+              main:
+                type: boolean
+                example: true
+        deliveryNotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryNote'
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     ResponseVehicle:
       type:
       - object
@@ -520,40 +646,336 @@ components:
                 - string
                 - 'null'
                 example: 'Brake: Disc/Disc/4-Wheel ABS'
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    CatalogPart:
+      type: object
+      required:
+      - partId
+      - partNumber
+      - partName
+      - brand
+      - partsTechCatalogURL
+      properties:
+        partId:
+          type: string
+          example: BBHK-24CA
+        partNumber:
+          type: string
+          example: 24CA
+        partName:
+          type: string
+          example: Bosch Windshield Wiper Blade
+        brand:
+          $ref: '#/components/schemas/Brand'
+        images:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            required:
+            - preview
+            - full
+            - medium
+            properties:
+              preview:
+                type: string
+              full:
+                type: string
+              medium:
+                type: string
+          example:
+          - preview: some_url
+            full: some_url
+            medium: some_url
+          - preview: some_url
+            full: some_url
+            medium: some_url
+        partsTechCatalogURL:
+          type: string
+          example: https://app.partstech.com/Bosch-Windshield-Wiper-Blade/details/BBHK-24CA?part_term=8852
+        taxonomy:
+          $ref: '#/components/schemas/ResponseTaxonomy'
+        partCategory:
+          $ref: '#/components/schemas/PartCategory'
+        vehicleId:
+          type:
+          - integer
+          - 'null'
+          example: 189326
+        vehicleName:
+          type:
+          - string
+          - 'null'
+          example: 2009 BMW M3 Base 4.0L V8 DOHC S65B40A
+        attributes:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Attribute'
+          example:
+          - name: ItemQuantity
+            label: Item Qty/Size/Weight
+            value: 1 Each
+            type: Part
+          - name: Position
+            label: Position
+            value: Front Left
+            type: Part
+            dbInfo:
+              dbName: pcdb
+              tableName: positions
+              idFieldName: Position
+              idValue: PositionID
+          - name: Qty
+            label: Quantity per vehicle
+            value: 1
+            type: Both
+        variations:
+          type: array
+          minItems: 0
+          items:
+            type: object
+            properties:
+              variationId:
+                type: string
+              notes:
+                type: array
+                minItems: 0
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                  example: {}
+              partName:
+                type:
+                - string
+                - 'null'
+                example: Bosch Windshield Wiper Blade
+              attributes:
+                type: array
+                minItems: 0
+                items:
+                  $ref: '#/components/schemas/Attribute'
+                example:
+                - name: ItemQuantity
+                  label: Item Qty/Size/Weight
+                  value: 1 Each
+                  type: Part
+          example:
+          - variationId: E1fHKgzpPvO
+            partName: Bosch Clear Advantage
+            notes: {}
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Sedan
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+          - variationId: 3fh7cCVNQOX
+            partName: Bosch Clear Advantage
+            notes:
+            - - Remove plastic guide from wiper arm
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Coupe
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+          - variationId: Iwf0SBSW8u4
+            partName: Bosch Clear Advantage
+            notes:
+            - - Remove plastic guide from wiper arm
+            attributes:
+            - name: Position
+              label: Position
+              value: Front Left
+              type: Part
+              dbInfo:
+                dbName: pcdb
+                tableName: positions
+                idFieldName: Position
+                idValue: PositionID
+            - name: Bodytype
+              label: Body
+              value: Convertible
+              type: Both
+              dbInfo:
+                dbName: vcdb
+                tableName: bodytype
+                idFieldName: BodyTypeName
+                idValue: BodyTypeID
+            - name: Qty
+              label: Quantity per vehicle
+              value: 1
+              type: Both
+        notes:
+          type: array
+          minItems: 0
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: string
+          example:
+          - - Optional Ceramic
+            - Includes Hardware Installation Kit
+        originalPart:
+          type:
+          - object
+          - 'null'
+          required:
+          - partNumber
+          properties:
+            typeOfOrigination:
+              type: string
+              enum:
+              - Alternate
+              - Interchange
+              - Supersession
+            partId:
+              type:
+              - string
+              - 'null'
+              example: ABCD-12345
+            partNumber:
+              type: string
+              example: 12345
+            brand:
+              $ref: '#/components/schemas/Brand'
+        rewards:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Rewards'
+          example:
+          - program: extra Loyalty Program
+            points: 10
+            bonusPoints: 1
+    CartSearchSupplier:
+      allOf:
+      - $ref: '#/components/schemas/BriefSupplier'
+      - type: object
+        required:
+        - allowStoreSelect
+        - availabilitySelect
+        properties:
+          allowStoreSelect:
+            type: boolean
+            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
+          availabilitySelect:
+            type: boolean
+            description: If true for a supplier, users are required to select a specific store when sourcing parts.
+          postOrderUpdates:
+            type: boolean
+            description: If true for a supplier, order can be updated after they placed.
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
 
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+        It consists on Vehicle ID and Part Types or Keyword.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - plate
+      - vehicleId
       properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    DetailCatalogPart:
+      allOf:
+      - $ref: '#/components/schemas/CatalogPart'
+      - $ref: '#/components/schemas/DetailPartParams'
+      - $ref: '#/components/schemas/LaborPartParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    Regions:
+      description: Array of country codes ISO 3166-1 alpha-2
+      type: array
+      items:
+        type: string
+      example:
+      - US
+      - CA
     Attribute:
       type: object
       properties:
@@ -587,33 +1009,6 @@ components:
               type: string
             idValue:
               type: string
-    PartCategory:
-      type:
-      - string
-      - 'null'
-      enum:
-      - Maintenance
-      - Service
-      - Consumable
-    BriefSupplier:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
-        name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
-    DetailCatalogPart:
-      allOf:
-      - $ref: '#/components/schemas/CatalogPart'
-      - $ref: '#/components/schemas/DetailPartParams'
-      - $ref: '#/components/schemas/LaborPartParams'
     Brand:
       type: object
       description: Contains brand information about a part.
@@ -649,14 +1044,49 @@ components:
         brandName: Bosch
         id: 551
         displayName: Bosch
-    LaborPartParams:
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
       type: object
+      required:
+      - partNumber
       properties:
-        labor:
+        partNumber:
           type: array
-          minItems: 0
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
           items:
-            $ref: '#/components/schemas/ResponsePartLabor'
+            type: string
+          example:
+          - 12345
+    DetailQuotedPart:
+      allOf:
+      - $ref: '#/components/schemas/CatalogPart'
+      - $ref: '#/components/schemas/DetailPartParams'
+      - $ref: '#/components/schemas/QuoteParams'
+      - $ref: '#/components/schemas/LaborPartParams'
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
     DetailPartParams:
       type: object
       properties:
@@ -936,135 +1366,29 @@ components:
       properties:
         vehicleParams:
           $ref: '#/components/schemas/VehicleParams'
-    CartSearchSupplier:
-      allOf:
-      - $ref: '#/components/schemas/BriefSupplier'
-      - type: object
-        required:
-        - allowStoreSelect
-        - availabilitySelect
-        properties:
-          allowStoreSelect:
-            type: boolean
-            description: If true for a supplier, users have the option to select a specfic store when sourcing parts.
-          availabilitySelect:
-            type: boolean
-            description: If true for a supplier, users are required to select a specific store when sourcing parts.
-          postOrderUpdates:
-            type: boolean
-            description: If true for a supplier, order can be updated after they placed.
-    DetailQuotedPart:
-      allOf:
-      - $ref: '#/components/schemas/CatalogPart'
-      - $ref: '#/components/schemas/DetailPartParams'
-      - $ref: '#/components/schemas/QuoteParams'
-      - $ref: '#/components/schemas/LaborPartParams'
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    DeliveryNote:
       type: object
       required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
+      - label
+      - text
+      - date
       properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineId:
-          type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
-      properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
+        label:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
     ResponseTaxonomy:
       type:
       - object
@@ -1118,347 +1442,61 @@ components:
         categoryName: Wiper and Washer
         subCategoryId: 236
         subCategoryName: Windshield Wiper Arm, Blade, and Related Components
-    CatalogPart:
-      type: object
-      required:
-      - partId
-      - partNumber
-      - partName
-      - brand
-      - partsTechCatalogURL
-      properties:
-        partId:
-          type: string
-          example: BBHK-24CA
-        partNumber:
-          type: string
-          example: 24CA
-        partName:
-          type: string
-          example: Bosch Windshield Wiper Blade
-        brand:
-          $ref: '#/components/schemas/Brand'
-        images:
-          type: array
-          minItems: 0
-          items:
-            type: object
-            required:
-            - preview
-            - full
-            - medium
-            properties:
-              preview:
-                type: string
-              full:
-                type: string
-              medium:
-                type: string
-          example:
-          - preview: some_url
-            full: some_url
-            medium: some_url
-          - preview: some_url
-            full: some_url
-            medium: some_url
-        partsTechCatalogURL:
-          type: string
-          example: https://app.partstech.com/Bosch-Windshield-Wiper-Blade/details/BBHK-24CA?part_term=8852
-        taxonomy:
-          $ref: '#/components/schemas/ResponseTaxonomy'
-        partCategory:
-          $ref: '#/components/schemas/PartCategory'
-        vehicleId:
-          type:
-          - integer
-          - 'null'
-          example: 189326
-        vehicleName:
-          type:
-          - string
-          - 'null'
-          example: 2009 BMW M3 Base 4.0L V8 DOHC S65B40A
-        attributes:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/Attribute'
-          example:
-          - name: ItemQuantity
-            label: Item Qty/Size/Weight
-            value: 1 Each
-            type: Part
-          - name: Position
-            label: Position
-            value: Front Left
-            type: Part
-            dbInfo:
-              dbName: pcdb
-              tableName: positions
-              idFieldName: Position
-              idValue: PositionID
-          - name: Qty
-            label: Quantity per vehicle
-            value: 1
-            type: Both
-        variations:
-          type: array
-          minItems: 0
-          items:
-            type: object
-            properties:
-              variationId:
-                type: string
-              notes:
-                type: array
-                minItems: 0
-                items:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: string
-                  example: {}
-              partName:
-                type:
-                - string
-                - 'null'
-                example: Bosch Windshield Wiper Blade
-              attributes:
-                type: array
-                minItems: 0
-                items:
-                  $ref: '#/components/schemas/Attribute'
-                example:
-                - name: ItemQuantity
-                  label: Item Qty/Size/Weight
-                  value: 1 Each
-                  type: Part
-          example:
-          - variationId: E1fHKgzpPvO
-            partName: Bosch Clear Advantage
-            notes: {}
-            attributes:
-            - name: Position
-              label: Position
-              value: Front Left
-              type: Part
-              dbInfo:
-                dbName: pcdb
-                tableName: positions
-                idFieldName: Position
-                idValue: PositionID
-            - name: Bodytype
-              label: Body
-              value: Sedan
-              type: Both
-              dbInfo:
-                dbName: vcdb
-                tableName: bodytype
-                idFieldName: BodyTypeName
-                idValue: BodyTypeID
-            - name: Qty
-              label: Quantity per vehicle
-              value: 1
-              type: Both
-          - variationId: 3fh7cCVNQOX
-            partName: Bosch Clear Advantage
-            notes:
-            - - Remove plastic guide from wiper arm
-            attributes:
-            - name: Position
-              label: Position
-              value: Front Left
-              type: Part
-              dbInfo:
-                dbName: pcdb
-                tableName: positions
-                idFieldName: Position
-                idValue: PositionID
-            - name: Bodytype
-              label: Body
-              value: Coupe
-              type: Both
-              dbInfo:
-                dbName: vcdb
-                tableName: bodytype
-                idFieldName: BodyTypeName
-                idValue: BodyTypeID
-            - name: Qty
-              label: Quantity per vehicle
-              value: 1
-              type: Both
-          - variationId: Iwf0SBSW8u4
-            partName: Bosch Clear Advantage
-            notes:
-            - - Remove plastic guide from wiper arm
-            attributes:
-            - name: Position
-              label: Position
-              value: Front Left
-              type: Part
-              dbInfo:
-                dbName: pcdb
-                tableName: positions
-                idFieldName: Position
-                idValue: PositionID
-            - name: Bodytype
-              label: Body
-              value: Convertible
-              type: Both
-              dbInfo:
-                dbName: vcdb
-                tableName: bodytype
-                idFieldName: BodyTypeName
-                idValue: BodyTypeID
-            - name: Qty
-              label: Quantity per vehicle
-              value: 1
-              type: Both
-        notes:
-          type: array
-          minItems: 0
-          items:
-            type: array
-            minItems: 1
-            items:
-              type: string
-          example:
-          - - Optional Ceramic
-            - Includes Hardware Installation Kit
-        originalPart:
-          type:
-          - object
-          - 'null'
-          required:
-          - partNumber
-          properties:
-            typeOfOrigination:
-              type: string
-              enum:
-              - Alternate
-              - Interchange
-              - Supersession
-            partId:
-              type:
-              - string
-              - 'null'
-              example: ABCD-12345
-            partNumber:
-              type: string
-              example: 12345
-            brand:
-              $ref: '#/components/schemas/Brand'
-        rewards:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/Rewards'
-          example:
-          - program: extra Loyalty Program
-            points: 10
-            bonusPoints: 1
-    Regions:
-      description: Array of country codes ISO 3166-1 alpha-2
-      type: array
-      items:
-        type: string
-      example:
-      - US
-      - CA
-    DeliveryNote:
-      type: object
-      required:
-      - label
-      - text
-      - date
-      properties:
-        label:
-          type:
-          - string
-          - 'null'
-        text:
-          type:
-          - string
-          - 'null'
-    Rewards:
-      type:
-      - array
-      - 'null'
-      minItems: 0
-      items:
-        type: object
-        properties:
-          program:
-            type:
-            - string
-            - 'null'
-          points:
-            type:
-            - integer
-            - 'null'
-          bonusPoints:
-            type:
-            - integer
-            - 'null'
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
 
-        It consists on Vehicle ID and Part Types or Keyword.
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleId
+      - vin
       properties:
-        vehicleId:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
-    EngineParams:
-      title: Engine params
+        vin:
+          type: string
+          example: SomeVIN
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
       type: object
+      minProperties: 1
+      maxProperties: 2
       required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
+      - plate
       properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
     PartPrice:
       type: object
       required:
@@ -1516,64 +1554,26 @@ components:
           description: Minimum Advertised Price
           format: float
           example: 1.9
-    QuoteParams:
-      type: object
-      required:
-      - status
-      - supplier
-      - store
-      - lineCardId
-      - price
-      properties:
-        status:
-          type: string
-          enum:
-          - IN_STOCK
-          - OUT_OF_STOCK
-          - SPECIAL_ORDER
-          - BACK_ORDER
-          - CHECK_AVAILABILITY
-          description: 'CHECK_AVAILABILITY - Part availability can be received only through ["Get Part (with request body)"](#operation/getPartWithRequestBody) with `storeId` provided. This applies to certain Tire suppliers that require branch selection.
-
-            '
-        supplier:
-          $ref: '#/components/schemas/CartSearchSupplier'
-        store:
-          $ref: '#/components/schemas/BriefStore'
-        lineCardId:
-          type: integer
-          example: 123
-        price:
-          $ref: '#/components/schemas/PartPrice'
-        quantity:
-          type: integer
-        backOrder:
-          type: boolean
-        storesAvailability:
-          type: array
-          minItems: 0
-          items:
-            type: object
-            minProperties: 2
-            required:
-            - specificName
-            - quantity
-            properties:
-              specificName:
-                type: string
-                example: In network
-              store:
-                $ref: '#/components/schemas/BriefStore'
-              quantity:
-                type: integer
-                example: 3
-              main:
-                type: boolean
-                example: true
-        deliveryNotes:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeliveryNote'
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
   parameters:
     locale:
       name: locale

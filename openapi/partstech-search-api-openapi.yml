@@ -328,176 +328,6 @@ paths:
                         count: 0
 components:
   schemas:
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
-
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - plate
-      properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
-    VinSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    Attribute:
-      type: object
-      properties:
-        name:
-          type: string
-        label:
-          type: string
-        value:
-          type: string
-        type:
-          type: string
-          enum:
-          - Vehicle
-          - Part
-          - Both
-        dbInfo:
-          type:
-          - object
-          - 'null'
-          required:
-          - dbName
-          - tableName
-          - idFieldName
-          - idValue
-          properties:
-            dbName:
-              type: string
-            tableName:
-              type: string
-            idFieldName:
-              type: string
-            idValue:
-              type: string
-    PartCategory:
-      type:
-      - string
-      - 'null'
-      enum:
-      - Maintenance
-      - Service
-      - Consumable
-    PartsTechVehicleIdSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    Brand:
-      type: object
-      description: Contains brand information about a part.
-      required:
-      - brandID
-      - brandName
-      properties:
-        brandID:
-          type: string
-          example: BBCM
-          description: The ID of a brand from the Autocare Association.
-        brandName:
-          type: string
-          example: Alba
-          description: The name of a brand.
-        id:
-          description: PartsTech's ID for a brand.
-          type:
-          - integer
-          - 'null'
-          example: 1
-        displayName:
-          type:
-          - string
-          - 'null'
-          example: Alba
-        lineCode:
-          type:
-          - string
-          - 'null'
-      example:
-        brandID: BBHK
-        brandName: Bosch
-        id: 551
-        displayName: Bosch
-    PlateSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    VinSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    VehicleSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    PartTypesSearchParams:
-      type: object
-      required:
-      - partTypeIds
-      properties:
-        partTypeIds:
-          type: array
-          minItems: 1
-          maxItems: 50
-          uniqueItems: true
-          items:
-            type: integer
-          example:
-          - 1004
-          - 1006
-          description: The ID of a part type from the Autocare Association's PCdb.
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    PlateSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
     KeywordSearchParams:
       type: object
       required:
@@ -506,58 +336,43 @@ components:
         keyword:
           type: string
           example: Air Filter
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    EngineParams:
+      title: Engine params
       type: object
       required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
       properties:
-        yearId:
+        engineVinId:
           type: integer
-          example: 2015
-        makeId:
+          example: 134
+        engineDesignationId:
           type: integer
-          example: 65
-        modelId:
+          example: 344
+        engineVersionId:
           type: integer
-          example: 123
-        subModelId:
+          example: 342
+        fuelTypeId:
           type: integer
-          example: 234
-        engineId:
+          example: 54
+        cylinderHeadTypeId:
           type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
+          example: 25243
+    PartsTechVehicleIdSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VinSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
     VehicleParamsByEngineConfigId:
       title: Vehicle params with engineConfigId
       description: 'Vehicle parameters with Engine Config ID.
@@ -589,82 +404,10 @@ components:
         engineConfigId:
           type: integer
           example: 34
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
-      properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
-    ResponseTaxonomy:
-      type:
-      - object
-      - 'null'
-      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
-      required:
-      - partTypeId
-      properties:
-        partTypeId:
-          type: integer
-          example: 14216
-          description: The ID of a part type from the Autocare Association's PCdb.
-        partTypeName:
-          type:
-          - string
-          - 'null'
-          example: Air Filter Set
-          description: The name of a part type.
-        partTypeDescription:
-          type:
-          - string
-          - 'null'
-          example: Initial fill additive for turbochargers.
-          description: The description of a part type.
-        categoryId:
-          type:
-          - integer
-          - 'null'
-          example: 12
-          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
-        categoryName:
-          type:
-          - string
-          - 'null'
-          example: Air and Fuel Delivery
-          description: The name of a category.
-        subCategoryId:
-          type: integer
-          example: 153
-          description: The ID of a subcategory from the Autocare Association's PCdb.
-        subCategoryName:
-          type:
-          - string
-          - 'null'
-          example: Filters
-          description: The name of a subcategory.
-      example:
-        partTypeId: 8852
-        partTypeName: Windshield Wiper Blade
-        categoryId: 22
-        categoryName: Wiper and Washer
-        subCategoryId: 236
-        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
     CatalogPart:
       type: object
       required:
@@ -904,30 +647,156 @@ components:
           - program: extra Loyalty Program
             points: 10
             bonusPoints: 1
-    Rewards:
-      type:
-      - array
-      - 'null'
-      minItems: 0
-      items:
-        type: object
-        properties:
-          program:
-            type:
-            - string
-            - 'null'
-          points:
-            type:
-            - integer
-            - 'null'
-          bonusPoints:
-            type:
-            - integer
-            - 'null'
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
+
+        It consists on Vehicle ID and Part Types or Keyword.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleId
+      properties:
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    VehicleSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
     VehicleSearchParamsByKeyword:
       allOf:
       - $ref: '#/components/schemas/VehicleSearchParams'
       - $ref: '#/components/schemas/KeywordSearchParams'
+    PlateSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
     NonAppSearchParams:
       description: 'Parameters for the search by universal part types.
 
@@ -959,55 +828,186 @@ components:
                 type: array
                 items:
                   type: string
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    PartsTechVehicleIdSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
 
-        It consists on Vehicle ID and Part Types or Keyword.
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
 
         '
       type: object
       minProperties: 1
       maxProperties: 2
       required:
-      - vehicleId
+      - vehicleParams
       properties:
-        vehicleId:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    PartsTechVehicleIdSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
           type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    PartTypesSearchParams:
+      type: object
+      required:
+      - partTypeIds
+      properties:
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    Rewards:
+      type:
+      - array
+      - 'null'
+      minItems: 0
+      items:
+        type: object
+        properties:
+          program:
+            type:
+            - string
+            - 'null'
+          points:
+            type:
+            - integer
+            - 'null'
+          bonusPoints:
+            type:
+            - integer
+            - 'null'
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
   parameters:
     locale:
       name: locale

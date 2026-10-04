@@ -111,169 +111,7 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidToken'
 components:
-  schemas:
-    PartnerCredentials:
-      type: object
-      description: Partner Auth Credentials
-      required:
-      - partner
-      properties:
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        partner:
-          id: partstech_partner
-          key: Partner API key
-    UserCredentials:
-      type: object
-      description: User And Partner Auth Credentials
-      required:
-      - user
-      - partner
-      properties:
-        user:
-          $ref: '#/components/schemas/IdentityKey'
-        partner:
-          $ref: '#/components/schemas/IdentityKey'
-      example:
-        user:
-          id: partstech_user
-          key: User API key
-        partner:
-          id: partstech_partner
-          key: Partner API key
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
-    InvalidRequestError:
-      description: Malformed request. The request body is not parse-able or with invalid content.
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          $ref: '#/components/schemas/Error'
-        validationErrors:
-          type: array
-          items:
-            type: string
-      example:
-        error:
-          code: InvalidRequestSyntax
-          message: Cannot parse request. Invalid data format
-        validationErrors:
-        - credentials.user.key - This value should not be blank.
-        - credentials.user.id - This value should be of type string.
-        - credentials.partner - This value should not be blank.
-    IdentityKey:
-      type: object
-      description: User or Partner ID and API Key
-      required:
-      - id
-      - key
-      properties:
-        id:
-          type: string
-          description: User or Partner ID
-          example: username
-        key:
-          type: string
-          description: User or Partner API key
-          example: APIkey
   responses:
-    InvalidToken:
-      description: Invalid Token.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                title: Error details
-                type: object
-                required:
-                - code
-                - message
-                properties:
-                  code:
-                    type: string
-                    enum:
-                    - InvalidToken
-                    - ExpiredToken
-                  message:
-                    type: string
-            example:
-              error:
-                code: InvalidToken
-                message: Invalid token was provided
-    Tokens:
-      description: OK
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - tokenType
-            - accessToken
-            - expiresIn
-            - partner
-            properties:
-              tokenType:
-                type: string
-                enum:
-                - bearer
-              accessToken:
-                type: string
-                description: A valid JSON Web Token
-                example: some JWT token
-              refreshToken:
-                type:
-                - string
-                - 'null'
-                deprecated: true
-                example: some JWT token
-              expiresIn:
-                type: integer
-                format: int64
-                description: Time until `accessToken` expires, 60 minutes.
-                example: 10947234663
-              username:
-                type: string
-                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
-                example: partstech_user
-              partner:
-                type: string
-                description: The Partner Id of the partner provided in the request.
-                example: partstech_partner
-    InternalServerError:
-      description: Internal Server Error.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
-            example:
-              error:
-                code: InternalError
-                message: Internal error
     ForbiddenError:
       description: Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues.
       content:
@@ -361,12 +199,174 @@ components:
                 error:
                   code: PartnerAuthenticationFailed
                   message: Incorrect partner id or partner key
+    InvalidToken:
+      description: Invalid Token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                title: Error details
+                type: object
+                required:
+                - code
+                - message
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - InvalidToken
+                    - ExpiredToken
+                  message:
+                    type: string
+            example:
+              error:
+                code: InvalidToken
+                message: Invalid token was provided
     InvalidRequest:
       description: Malformed request. The request body is not parse-able or with invalid content.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/InvalidRequestError'
+    Tokens:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - tokenType
+            - accessToken
+            - expiresIn
+            - partner
+            properties:
+              tokenType:
+                type: string
+                enum:
+                - bearer
+              accessToken:
+                type: string
+                description: A valid JSON Web Token
+                example: some JWT token
+              refreshToken:
+                type:
+                - string
+                - 'null'
+                deprecated: true
+                example: some JWT token
+              expiresIn:
+                type: integer
+                format: int64
+                description: Time until `accessToken` expires, 60 minutes.
+                example: 10947234663
+              username:
+                type: string
+                description: The Username/UserId of the user provided in the request. Present when `user` access type is requested.
+                example: partstech_user
+              partner:
+                type: string
+                description: The Partner Id of the partner provided in the request.
+                example: partstech_partner
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+            example:
+              error:
+                code: InternalError
+                message: Internal error
+  schemas:
+    PartnerCredentials:
+      type: object
+      description: Partner Auth Credentials
+      required:
+      - partner
+      properties:
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        partner:
+          id: partstech_partner
+          key: Partner API key
+    IdentityKey:
+      type: object
+      description: User or Partner ID and API Key
+      required:
+      - id
+      - key
+      properties:
+        id:
+          type: string
+          description: User or Partner ID
+          example: username
+        key:
+          type: string
+          description: User or Partner API key
+          example: APIkey
+    InvalidRequestError:
+      description: Malformed request. The request body is not parse-able or with invalid content.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        validationErrors:
+          type: array
+          items:
+            type: string
+      example:
+        error:
+          code: InvalidRequestSyntax
+          message: Cannot parse request. Invalid data format
+        validationErrors:
+        - credentials.user.key - This value should not be blank.
+        - credentials.user.id - This value should be of type string.
+        - credentials.partner - This value should not be blank.
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+    UserCredentials:
+      type: object
+      description: User And Partner Auth Credentials
+      required:
+      - user
+      - partner
+      properties:
+        user:
+          $ref: '#/components/schemas/IdentityKey'
+        partner:
+          $ref: '#/components/schemas/IdentityKey'
+      example:
+        user:
+          id: partstech_user
+          key: User API key
+        partner:
+          id: partstech_partner
+          key: Partner API key
   securitySchemes:
     bearerAuth:
       type: http

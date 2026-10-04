@@ -95,28 +95,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Brand'
 components:
-  parameters:
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
-    perPage:
-      name: perPage
-      in: query
-      schema:
-        type: integer
-        enum:
-        - 10
-        - 25
-        - 50
-        - 100
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 50
-      description: 'Records per request. Default: 50'
   schemas:
     Brand:
       type: object
@@ -153,6 +131,28 @@ components:
         brandName: Bosch
         id: 551
         displayName: Bosch
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
+    perPage:
+      name: perPage
+      in: query
+      schema:
+        type: integer
+        enum:
+        - 10
+        - 25
+        - 50
+        - 100
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 50
+      description: 'Records per request. Default: 50'
   securitySchemes:
     bearerAuth:
       type: http

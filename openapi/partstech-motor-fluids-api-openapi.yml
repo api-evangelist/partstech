@@ -110,6 +110,17 @@ paths:
           $ref: '#/components/responses/VehicleNotFound'
 components:
   schemas:
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    SearchParams:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartNumberSearchParams'
     PartNumberSearchParams:
       description: 'A search parameters for the search by PartNumber.
 
@@ -133,6 +144,117 @@ components:
             type: string
           example:
           - 12345
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    EngineParams:
+      title: Engine params
+      type: object
+      required:
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
+      properties:
+        engineVinId:
+          type: integer
+          example: 134
+        engineDesignationId:
+          type: integer
+          example: 344
+        engineVersionId:
+          type: integer
+          example: 342
+        fuelTypeId:
+          type: integer
+          example: 54
+        cylinderHeadTypeId:
+          type: integer
+          example: 25243
     FluidsApplication:
       type: object
       required:
@@ -207,85 +329,62 @@ components:
           items:
             $ref: '#/components/schemas/Capacity'
           description: Capacities associated with this fluid.
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
-
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - plate
-      properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
-    Capacity:
+    FluidsDetailsItem:
       type: object
       required:
-      - name
-      - items
+      - grade
+      - gradePreference
+      - maxCapacity
+      - unitOfMeasure
       properties:
-        name:
+        grade:
+          $ref: '#/components/schemas/Grade'
+        gradePreference:
+          type: integer
+          format: int32
+          description: Preference for this grade.
+        maxCapacity:
+          type: integer
+          format: int32
+          description: Maximum capacity of this item.
+        partNumber:
+          type:
+          - string
+          - 'null'
+          description: Part number of this item.
+        specStandard:
+          type:
+          - string
+          - 'null'
+          description: Specification standard, if any.
+        tempRange:
+          type:
+          - string
+          - 'null'
+          description: Temperature range, if applicable.
+        tradeName:
+          type:
+          - string
+          - 'null'
+          description: Trade name of the item.
+        unitOfMeasure:
           type: string
-          description: The name of the capacity.
-        items:
+          description: Unit of measurement.
+        viscosity:
+          type:
+          - string
+          - 'null'
+          description: Viscosity of the item.
+        formulation:
+          type:
+          - string
+          - 'null'
+          description: Formulation.
+        notes:
           type: array
           items:
-            $ref: '#/components/schemas/CapacityItem'
-          description: Items related to this capacity.
-    SearchParams:
-      type: object
-      oneOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartNumberSearchParams'
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+            type: string
+          description: Notes related to this details.
     ExtendedParameter:
       type: object
       required:
@@ -298,96 +397,6 @@ components:
         value:
           type: string
           description: The value of the parameter.
-    Grade:
-      type: object
-      description: The grade of the item.
-      required:
-      - code
-      - description
-      properties:
-        code:
-          type: string
-          description: The code representing the grade.
-        description:
-          type: string
-          description: Description of the grade.
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineId:
-          type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
     VehicleParamsByEngineConfigId:
       title: Vehicle params with engineConfigId
       description: 'Vehicle parameters with Engine Config ID.
@@ -457,81 +466,54 @@ components:
           - 'null'
           format: float
           description: Minimum value, if applicable.
-    FluidsDetailsItem:
+    Capacity:
       type: object
       required:
-      - grade
-      - gradePreference
-      - maxCapacity
-      - unitOfMeasure
+      - name
+      - items
       properties:
-        grade:
-          $ref: '#/components/schemas/Grade'
-        gradePreference:
-          type: integer
-          format: int32
-          description: Preference for this grade.
-        maxCapacity:
-          type: integer
-          format: int32
-          description: Maximum capacity of this item.
-        partNumber:
-          type:
-          - string
-          - 'null'
-          description: Part number of this item.
-        specStandard:
-          type:
-          - string
-          - 'null'
-          description: Specification standard, if any.
-        tempRange:
-          type:
-          - string
-          - 'null'
-          description: Temperature range, if applicable.
-        tradeName:
-          type:
-          - string
-          - 'null'
-          description: Trade name of the item.
-        unitOfMeasure:
+        name:
           type: string
-          description: Unit of measurement.
-        viscosity:
-          type:
-          - string
-          - 'null'
-          description: Viscosity of the item.
-        formulation:
-          type:
-          - string
-          - 'null'
-          description: Formulation.
-        notes:
+          description: The name of the capacity.
+        items:
           type: array
           items:
-            type: string
-          description: Notes related to this details.
+            $ref: '#/components/schemas/CapacityItem'
+          description: Items related to this capacity.
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    Grade:
+      type: object
+      description: The grade of the item.
+      required:
+      - code
+      - description
+      properties:
+        code:
+          type: string
+          description: The code representing the grade.
+        description:
+          type: string
+          description: Description of the grade.
   responses:
-    UnsupportedVehicle:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: object
-                properties:
-                  code:
-                    type: string
-                  message:
-                    type: string
-            example:
-              error:
-                code: UnsupportedVehicle
-                message: MOTOR does not currently support data for Canadian vehicles.
     VehicleNotFound:
       description: Not Found
       content:
@@ -550,6 +532,24 @@ components:
               error:
                 code: NotFound
                 message: Vehicle was not found
+    UnsupportedVehicle:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+            example:
+              error:
+                code: UnsupportedVehicle
+                message: MOTOR does not currently support data for Canadian vehicles.
   headers:
     MotorComplianceLink:
       description: 'Labor, maintenance schedules, fluids, and specifications data provided by MOTOR.

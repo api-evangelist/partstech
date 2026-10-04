@@ -193,21 +193,6 @@ components:
         demo:
           type: boolean
           example: false
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
     EntireShop:
       allOf:
       - $ref: '#/components/schemas/BriefShop'
@@ -229,6 +214,32 @@ components:
             $ref: '#/components/schemas/Address'
           billingAddress:
             $ref: '#/components/schemas/Address'
+    BriefShop:
+      type: object
+      required:
+      - id
+      - name
+      - phone
+      - demo
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech ID of a shop.
+        name:
+          type: string
+          example: Mechanic Shop
+        phone:
+          type: string
+          example: (777) 777-7777 x111
+        cellphone:
+          type:
+          - string
+          - 'null'
+          example: (777) 777-7777 x111
+        demo:
+          type: boolean
+          example: false
     Address:
       type: object
       description: Address of the user's shop
@@ -268,46 +279,22 @@ components:
           pattern: \w{2,2}
           default: US
           example: US
-    BriefShop:
+    Error:
+      title: Error Definition
       type: object
       required:
-      - id
-      - name
-      - phone
-      - demo
+      - code
+      - message
       properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech ID of a shop.
-        name:
-          type: string
-          example: Mechanic Shop
-        phone:
-          type: string
-          example: (777) 777-7777 x111
-        cellphone:
+        code:
           type:
           - string
           - 'null'
-          example: (777) 777-7777 x111
-        demo:
-          type: boolean
-          example: false
+        message:
+          type:
+          - string
+          - 'null'
   responses:
-    InvalidAddressError:
-      description: Address is invalid
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
-            example:
-              error:
-                code: InvalidAddressError
-                message: Invalid state
     ProfileShopResponse:
       description: OK
       content:
@@ -324,6 +311,19 @@ components:
                   minItems: 1
                   items:
                     $ref: '#/components/schemas/User'
+    InvalidAddressError:
+      description: Address is invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+            example:
+              error:
+                code: InvalidAddressError
+                message: Invalid state
   securitySchemes:
     bearerAuth:
       type: http

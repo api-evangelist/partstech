@@ -333,19 +333,6 @@ paths:
                   $ref: '#/components/schemas/ResponsePartTypeAttribute'
 components:
   parameters:
-    locale:
-      name: locale
-      in: query
-      description: Locale, default en_US
-      schema:
-        type:
-        - string
-        - 'null'
-        enum:
-        - en_US
-        - es_MX
-      required: false
-      example: null
     perPage:
       name: perPage
       in: query
@@ -367,6 +354,19 @@ components:
         minimum: 1
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 2
+    locale:
+      name: locale
+      in: query
+      description: Locale, default en_US
+      schema:
+        type:
+        - string
+        - 'null'
+        enum:
+        - en_US
+        - es_MX
+      required: false
+      example: null
   schemas:
     ResponsePartTypeAttribute:
       type: object

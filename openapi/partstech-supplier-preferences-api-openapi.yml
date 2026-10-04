@@ -275,80 +275,6 @@ paths:
         '200':
           $ref: '#/components/responses/SupplierPreferences'
 components:
-  schemas:
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    SupplierPreferenceCredentialsResponse:
-      type: object
-      description: Credential
-      required:
-      - label
-      - internalName
-      - value
-      - type
-      properties:
-        label:
-          type: string
-          description: User-friendly label for the credential.
-        internalName:
-          type: string
-          description: Internal name of the credential in Partstech.
-        value:
-          type: string
-        type:
-          type: string
-          description: Type of the credential. Text or Password.
-    SupplierPreferenceCredentialsRequest:
-      type: array
-      items:
-        type: object
-        description: Supplier preference credential request
-        required:
-        - name
-        - value
-        properties:
-          name:
-            type: string
-          value:
-            type: string
-    BriefSupplier:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
-        name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
-    PreferredStore:
-      allOf:
-      - $ref: '#/components/schemas/BriefStore'
-      - type: object
-        required:
-        - sellerId
-        properties:
-          sellerId:
-            type:
-            - string
-            - 'null'
-            example: asdasdb
   responses:
     SupplierPreferences:
       description: OK
@@ -468,6 +394,80 @@ components:
             status: Approved
             statusDescription: Your configuration is complete.
             priority: 4
+  schemas:
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    PreferredStore:
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - sellerId
+        properties:
+          sellerId:
+            type:
+            - string
+            - 'null'
+            example: asdasdb
+    SupplierPreferenceCredentialsRequest:
+      type: array
+      items:
+        type: object
+        description: Supplier preference credential request
+        required:
+        - name
+        - value
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    SupplierPreferenceCredentialsResponse:
+      type: object
+      description: Credential
+      required:
+      - label
+      - internalName
+      - value
+      - type
+      properties:
+        label:
+          type: string
+          description: User-friendly label for the credential.
+        internalName:
+          type: string
+          description: Internal name of the credential in Partstech.
+        value:
+          type: string
+        type:
+          type: string
+          description: Type of the credential. Text or Password.
   securitySchemes:
     bearerAuth:
       type: http

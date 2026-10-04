@@ -503,205 +503,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
 components:
   schemas:
-    Error:
-      title: Error Definition
-      type: object
-      required:
-      - code
-      - message
-      properties:
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
-    PlateSearchParams:
-      description: 'A search parameters for the search by Plate.
-
-        It consists on Plate and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - plate
-      properties:
-        plate:
-          type: object
-          required:
-          - state
-          - plate
-          properties:
-            state:
-              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-              type: string
-              minLength: 2
-              maxLength: 2
-              pattern: \w{2,2}
-              example: MA
-            plate:
-              type: string
-              example: SomePlate
-    VinSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    Attribute:
-      type: object
-      properties:
-        name:
-          type: string
-        label:
-          type: string
-        value:
-          type: string
-        type:
-          type: string
-          enum:
-          - Vehicle
-          - Part
-          - Both
-        dbInfo:
-          type:
-          - object
-          - 'null'
-          required:
-          - dbName
-          - tableName
-          - idFieldName
-          - idValue
-          properties:
-            dbName:
-              type: string
-            tableName:
-              type: string
-            idFieldName:
-              type: string
-            idValue:
-              type: string
-    PartCategory:
-      type:
-      - string
-      - 'null'
-      enum:
-      - Maintenance
-      - Service
-      - Consumable
-    BriefSupplier:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1458
-          description: PartsTech's ID for a supplier.
-        name:
-          type: string
-          example: Advance Auto Parts
-          description: The name of a supplier.
-    PartsTechVehicleIdSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    Brand:
-      type: object
-      description: Contains brand information about a part.
-      required:
-      - brandID
-      - brandName
-      properties:
-        brandID:
-          type: string
-          example: BBCM
-          description: The ID of a brand from the Autocare Association.
-        brandName:
-          type: string
-          example: Alba
-          description: The name of a brand.
-        id:
-          description: PartsTech's ID for a brand.
-          type:
-          - integer
-          - 'null'
-          example: 1
-        displayName:
-          type:
-          - string
-          - 'null'
-          example: Alba
-        lineCode:
-          type:
-          - string
-          - 'null'
-      example:
-        brandID: BBHK
-        brandName: Bosch
-        id: 551
-        displayName: Bosch
-    PlateSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    VinSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/VinSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    PartTypesSearchParams:
-      type: object
-      required:
-      - partTypeIds
-      properties:
-        partTypeIds:
-          type: array
-          minItems: 1
-          maxItems: 50
-          uniqueItems: true
-          items:
-            type: integer
-          example:
-          - 1004
-          - 1006
-          description: The ID of a part type from the Autocare Association's PCdb.
-    VehicleSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
-    VehicleSearchParams:
-      description: 'A search parameters for the search by vehicle parameters.
-
-        It consists on Vehicle arameters and Part Types or Keyword.
-
-
-        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleParams
-      properties:
-        vehicleParams:
-          $ref: '#/components/schemas/VehicleParams'
-    PlateSearchParamsByPartTypes:
-      allOf:
-      - $ref: '#/components/schemas/PlateSearchParams'
-      - $ref: '#/components/schemas/PartTypesSearchParams'
     KeywordSearchParams:
       type: object
       required:
@@ -710,155 +511,35 @@ components:
         keyword:
           type: string
           example: Air Filter
-    VehicleParamsByEngineIdAndEngineParams:
-      title: Vehicle params with engineId and engine params
-      description: 'Vehicle parameters with Engine ID and Engine parameters.
-
-        '
+    PlateSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    EngineParams:
+      title: Engine params
       type: object
       required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineId
-      - engineParams
+      - engineVinId
+      - engineDesignationId
+      - engineVersionId
+      - fuelTypeId
+      - cylinderHeadTypeId
       properties:
-        yearId:
+        engineVinId:
           type: integer
-          example: 2015
-        makeId:
+          example: 134
+        engineDesignationId:
           type: integer
-          example: 65
-        modelId:
+          example: 344
+        engineVersionId:
           type: integer
-          example: 123
-        subModelId:
+          example: 342
+        fuelTypeId:
           type: integer
-          example: 234
-        engineId:
+          example: 54
+        cylinderHeadTypeId:
           type: integer
-          example: 12344
-        engineParams:
-          $ref: '#/components/schemas/EngineParams'
-    VinSearchParams:
-      description: 'A search parameters for the search by vin.
-
-        It consists on VIN and Part Types or Keyword.
-
-
-        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
-
-
-        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vin
-      properties:
-        vin:
-          type: string
-          example: SomeVIN
-    VehicleParamsByEngineConfigId:
-      title: Vehicle params with engineConfigId
-      description: 'Vehicle parameters with Engine Config ID.
-
-
-        EngineID and other Engine parameters will be defined by Engine Config ID.
-
-        '
-      type: object
-      required:
-      - yearId
-      - makeId
-      - modelId
-      - subModelId
-      - engineConfigId
-      properties:
-        yearId:
-          type: integer
-          example: 2015
-        makeId:
-          type: integer
-          example: 65
-        modelId:
-          type: integer
-          example: 123
-        subModelId:
-          type: integer
-          example: 234
-        engineConfigId:
-          type: integer
-          example: 34
-    LocalInventoryMappingReportItem:
-      type: object
-      required:
-      - inventoryUID
-      - partNumber
-      - onHand
-      - partPrice
-      - partCost
-      - status
-      properties:
-        inventoryUID:
-          description: Unique ID of item in SMS.
-          type: string
-        partNumber:
-          type: string
-        brandAAIAID:
-          description: The ID of a brand from the Autocare Association. Can be got from brand object.
-          type:
-          - string
-          - 'null'
-        onHand:
-          description: Current quantity in inventory.
-          type: integer
-        partPrice:
-          description: Price for customer.
-          type: number
-          format: float
-        partCost:
-          description: Price for shop.
-          type: number
-          format: float
-        status:
-          type: string
-          enum:
-          - MAPPED
-          - UNMAPPED
-        error:
-          description: Mapping error details.
-          type:
-          - object
-          - 'null'
-          required:
-          - errorCode
-          - message
-          properties:
-            errorCode:
-              description: 'Error code. Describes a reason why items were not mapped.
-
-                - NO_PARTNER_MAPPING
-
-                - NO_SUPPLIER_MAPPING
-
-                - NO_LINE_CODE_MAPPING
-
-                - NO_BRAND_MAPPING
-
-                - PART_NOT_FOUND
-
-                - MULTIPLE_PARTS_FOUND
-
-                - etc
-
-                '
-              type: string
-            message:
-              type: string
+          example: 25243
     LocalInventoryPart:
       type: object
       required:
@@ -1100,243 +781,14 @@ components:
               example: 12345
             brand:
               $ref: '#/components/schemas/Brand'
-    PartNumberSearchParams:
-      description: 'A search parameters for the search by PartNumber.
-
-        It consists on only PartNumber.
-
-
-        Now it has limits of 1 PartNumber in a request.
-
-        '
-      type: object
-      required:
-      - partNumber
-      properties:
-        partNumber:
-          type: array
-          minItems: 1
-          maxItems: 1
-          uniqueItems: true
-          description: The manufacturer part number.
-          items:
-            type: string
-          example:
-          - 12345
-    ResponseTaxonomy:
-      type:
-      - object
-      - 'null'
-      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
-      required:
-      - partTypeId
-      properties:
-        partTypeId:
-          type: integer
-          example: 14216
-          description: The ID of a part type from the Autocare Association's PCdb.
-        partTypeName:
-          type:
-          - string
-          - 'null'
-          example: Air Filter Set
-          description: The name of a part type.
-        partTypeDescription:
-          type:
-          - string
-          - 'null'
-          example: Initial fill additive for turbochargers.
-          description: The description of a part type.
-        categoryId:
-          type:
-          - integer
-          - 'null'
-          example: 12
-          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
-        categoryName:
-          type:
-          - string
-          - 'null'
-          example: Air and Fuel Delivery
-          description: The name of a category.
-        subCategoryId:
-          type: integer
-          example: 153
-          description: The ID of a subcategory from the Autocare Association's PCdb.
-        subCategoryName:
-          type:
-          - string
-          - 'null'
-          example: Filters
-          description: The name of a subcategory.
-      example:
-        partTypeId: 8852
-        partTypeName: Windshield Wiper Blade
-        categoryId: 22
-        categoryName: Wiper and Washer
-        subCategoryId: 236
-        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
-    InvalidRequestError:
-      description: Malformed request. The request body is not parse-able or with invalid content.
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          $ref: '#/components/schemas/Error'
-        validationErrors:
-          type: array
-          items:
-            type: string
-      example:
-        error:
-          code: InvalidRequestSyntax
-          message: Cannot parse request. Invalid data format
-        validationErrors:
-        - credentials.user.key - This value should not be blank.
-        - credentials.user.id - This value should be of type string.
-        - credentials.partner - This value should not be blank.
-    VehicleSearchParamsByKeyword:
-      allOf:
-      - $ref: '#/components/schemas/VehicleSearchParams'
-      - $ref: '#/components/schemas/KeywordSearchParams'
-    NonAppSearchParams:
-      description: 'Parameters for the search by universal part types.
-
-
-        Use part types with application `UNIVERSAL` or `UNIVERSAL_FITTED` (see ["Get/Search Part Types"](#operation/getPartTypes)).
-
-        Check and select `required` attributes for a part type before sending of search request (see ["Get Part Type Attributes"](#operation/getPartTypeAttributes)).
-
-        '
-      type: object
-      required:
-      - partTypeId
-      - attributes
-      properties:
-        partTypeId:
-          type: integer
-          description: The ID of a part type from the Autocare Association's PCdb.
-        attributes:
-          type: array
-          items:
-            type: object
-            required:
-            - name
-            - values
-            properties:
-              name:
-                type: string
-              values:
-                type: array
-                items:
-                  type: string
-    VehicleParams:
-      oneOf:
-      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
-      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
-    PartsTechVehicleIdSearchParamsByPartTypes:
+    PartsTechVehicleIdSearchParamsByKeyword:
       allOf:
       - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    VinSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
       - $ref: '#/components/schemas/PartTypesSearchParams'
-    PartsTechVehicleIdSearchParams:
-      description: 'A search parameters for the search by PartsTech Vehicle ID.
-
-        It consists on Vehicle ID and Part Types or Keyword.
-
-        '
-      type: object
-      minProperties: 1
-      maxProperties: 2
-      required:
-      - vehicleId
-      properties:
-        vehicleId:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a vehicle.
-    EngineParams:
-      title: Engine params
-      type: object
-      required:
-      - engineVinId
-      - engineDesignationId
-      - engineVersionId
-      - fuelTypeId
-      - cylinderHeadTypeId
-      properties:
-        engineVinId:
-          type: integer
-          example: 134
-        engineDesignationId:
-          type: integer
-          example: 344
-        engineVersionId:
-          type: integer
-          example: 342
-        fuelTypeId:
-          type: integer
-          example: 54
-        cylinderHeadTypeId:
-          type: integer
-          example: 25243
-    PartPrice:
-      type: object
-      required:
-      - cost
-      - core
-      - fet
-      properties:
-        list:
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 1.2
-          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
-        price:
-          type: number
-          format: float
-          example: 1.6
-          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
-        cost:
-          type: number
-          format: float
-          example: 1.24
-          description: Cost of an item for the user including any discounts. Excludes any core charges.
-        core:
-          type: number
-          format: float
-          example: 0.4
-          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
-        fet:
-          type:
-          - number
-          - 'null'
-          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
-          format: float
-          example: 1.2
-        retail:
-          type:
-          - number
-          - 'null'
-          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
-          format: float
-          example: 2
-        discount:
-          type:
-          - number
-          - 'null'
-          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
-          format: float
-          example: 0.2
-        map:
-          type:
-          - number
-          - 'null'
-          description: Minimum Advertised Price
-          format: float
-          example: 1.9
     LocalInventoryItem:
       type: object
       required:
@@ -1409,35 +861,555 @@ components:
           type: number
           format: float
           description: Price for shop.
-  parameters:
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
-    locale:
-      name: locale
-      in: query
-      description: Locale, default en_US
-      schema:
-        type:
-        - string
-        - 'null'
-        enum:
-        - en_US
-        - es_MX
-      required: false
-      example: null
-  responses:
-    InvalidRequest:
+    LocalInventoryMappingReportItem:
+      type: object
+      required:
+      - inventoryUID
+      - partNumber
+      - onHand
+      - partPrice
+      - partCost
+      - status
+      properties:
+        inventoryUID:
+          description: Unique ID of item in SMS.
+          type: string
+        partNumber:
+          type: string
+        brandAAIAID:
+          description: The ID of a brand from the Autocare Association. Can be got from brand object.
+          type:
+          - string
+          - 'null'
+        onHand:
+          description: Current quantity in inventory.
+          type: integer
+        partPrice:
+          description: Price for customer.
+          type: number
+          format: float
+        partCost:
+          description: Price for shop.
+          type: number
+          format: float
+        status:
+          type: string
+          enum:
+          - MAPPED
+          - UNMAPPED
+        error:
+          description: Mapping error details.
+          type:
+          - object
+          - 'null'
+          required:
+          - errorCode
+          - message
+          properties:
+            errorCode:
+              description: 'Error code. Describes a reason why items were not mapped.
+
+                - NO_PARTNER_MAPPING
+
+                - NO_SUPPLIER_MAPPING
+
+                - NO_LINE_CODE_MAPPING
+
+                - NO_BRAND_MAPPING
+
+                - PART_NOT_FOUND
+
+                - MULTIPLE_PARTS_FOUND
+
+                - etc
+
+                '
+              type: string
+            message:
+              type: string
+    Error:
+      title: Error Definition
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+    VehicleParamsByEngineConfigId:
+      title: Vehicle params with engineConfigId
+      description: 'Vehicle parameters with Engine Config ID.
+
+
+        EngineID and other Engine parameters will be defined by Engine Config ID.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineConfigId
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineConfigId:
+          type: integer
+          example: 34
+    VehicleParams:
+      oneOf:
+      - $ref: '#/components/schemas/VehicleParamsByEngineIdAndEngineParams'
+      - $ref: '#/components/schemas/VehicleParamsByEngineConfigId'
+    BriefSupplier:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1458
+          description: PartsTech's ID for a supplier.
+        name:
+          type: string
+          example: Advance Auto Parts
+          description: The name of a supplier.
+    PartsTechVehicleIdSearchParams:
+      description: 'A search parameters for the search by PartsTech Vehicle ID.
+
+        It consists on Vehicle ID and Part Types or Keyword.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleId
+      properties:
+        vehicleId:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a vehicle.
+    VehicleSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    InvalidRequestError:
       description: Malformed request. The request body is not parse-able or with invalid content.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InvalidRequestError'
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        validationErrors:
+          type: array
+          items:
+            type: string
+      example:
+        error:
+          code: InvalidRequestSyntax
+          message: Cannot parse request. Invalid data format
+        validationErrors:
+        - credentials.user.key - This value should not be blank.
+        - credentials.user.id - This value should be of type string.
+        - credentials.partner - This value should not be blank.
+    VehicleParamsByEngineIdAndEngineParams:
+      title: Vehicle params with engineId and engine params
+      description: 'Vehicle parameters with Engine ID and Engine parameters.
+
+        '
+      type: object
+      required:
+      - yearId
+      - makeId
+      - modelId
+      - subModelId
+      - engineId
+      - engineParams
+      properties:
+        yearId:
+          type: integer
+          example: 2015
+        makeId:
+          type: integer
+          example: 65
+        modelId:
+          type: integer
+          example: 123
+        subModelId:
+          type: integer
+          example: 234
+        engineId:
+          type: integer
+          example: 12344
+        engineParams:
+          $ref: '#/components/schemas/EngineParams'
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+          - Vehicle
+          - Part
+          - Both
+        dbInfo:
+          type:
+          - object
+          - 'null'
+          required:
+          - dbName
+          - tableName
+          - idFieldName
+          - idValue
+          properties:
+            dbName:
+              type: string
+            tableName:
+              type: string
+            idFieldName:
+              type: string
+            idValue:
+              type: string
+    Brand:
+      type: object
+      description: Contains brand information about a part.
+      required:
+      - brandID
+      - brandName
+      properties:
+        brandID:
+          type: string
+          example: BBCM
+          description: The ID of a brand from the Autocare Association.
+        brandName:
+          type: string
+          example: Alba
+          description: The name of a brand.
+        id:
+          description: PartsTech's ID for a brand.
+          type:
+          - integer
+          - 'null'
+          example: 1
+        displayName:
+          type:
+          - string
+          - 'null'
+          example: Alba
+        lineCode:
+          type:
+          - string
+          - 'null'
+      example:
+        brandID: BBHK
+        brandName: Bosch
+        id: 551
+        displayName: Bosch
+    VehicleSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VehicleSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PlateSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/PlateSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+    PartNumberSearchParams:
+      description: 'A search parameters for the search by PartNumber.
+
+        It consists on only PartNumber.
+
+
+        Now it has limits of 1 PartNumber in a request.
+
+        '
+      type: object
+      required:
+      - partNumber
+      properties:
+        partNumber:
+          type: array
+          minItems: 1
+          maxItems: 1
+          uniqueItems: true
+          description: The manufacturer part number.
+          items:
+            type: string
+          example:
+          - 12345
+    NonAppSearchParams:
+      description: 'Parameters for the search by universal part types.
+
+
+        Use part types with application `UNIVERSAL` or `UNIVERSAL_FITTED` (see ["Get/Search Part Types"](#operation/getPartTypes)).
+
+        Check and select `required` attributes for a part type before sending of search request (see ["Get Part Type Attributes"](#operation/getPartTypeAttributes)).
+
+        '
+      type: object
+      required:
+      - partTypeId
+      - attributes
+      properties:
+        partTypeId:
+          type: integer
+          description: The ID of a part type from the Autocare Association's PCdb.
+        attributes:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - values
+            properties:
+              name:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+    VehicleSearchParams:
+      description: 'A search parameters for the search by vehicle parameters.
+
+        It consists on Vehicle arameters and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Vehicle arameters and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Vehicle parameters. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vehicleParams
+      properties:
+        vehicleParams:
+          $ref: '#/components/schemas/VehicleParams'
+    PartCategory:
+      type:
+      - string
+      - 'null'
+      enum:
+      - Maintenance
+      - Service
+      - Consumable
+    PartsTechVehicleIdSearchParamsByPartTypes:
+      allOf:
+      - $ref: '#/components/schemas/PartsTechVehicleIdSearchParams'
+      - $ref: '#/components/schemas/PartTypesSearchParams'
+    ResponseTaxonomy:
+      type:
+      - object
+      - 'null'
+      description: "Part taxonomy has three levels of classification. \nCategory, subcategory, and part type. \nCategory is the most broad and each category contains subcategories.\nEach subcategory contains part types. \nPart type is the most specific classification for a part. \nFor example, the taxonomy for brake pads are the following\n\\- Category = Brake - Subcategory = Disc Pads and Brake Shoes - Part Type = Disc Brake Pad Set.\n"
+      required:
+      - partTypeId
+      properties:
+        partTypeId:
+          type: integer
+          example: 14216
+          description: The ID of a part type from the Autocare Association's PCdb.
+        partTypeName:
+          type:
+          - string
+          - 'null'
+          example: Air Filter Set
+          description: The name of a part type.
+        partTypeDescription:
+          type:
+          - string
+          - 'null'
+          example: Initial fill additive for turbochargers.
+          description: The description of a part type.
+        categoryId:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          description: The ID of a part category from the Autocare Association's PCdb. Category is the highest level of part taxonomy.
+        categoryName:
+          type:
+          - string
+          - 'null'
+          example: Air and Fuel Delivery
+          description: The name of a category.
+        subCategoryId:
+          type: integer
+          example: 153
+          description: The ID of a subcategory from the Autocare Association's PCdb.
+        subCategoryName:
+          type:
+          - string
+          - 'null'
+          example: Filters
+          description: The name of a subcategory.
+      example:
+        partTypeId: 8852
+        partTypeName: Windshield Wiper Blade
+        categoryId: 22
+        categoryName: Wiper and Washer
+        subCategoryId: 236
+        subCategoryName: Windshield Wiper Arm, Blade, and Related Components
+    PartTypesSearchParams:
+      type: object
+      required:
+      - partTypeIds
+      properties:
+        partTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: integer
+          example:
+          - 1004
+          - 1006
+          description: The ID of a part type from the Autocare Association's PCdb.
+    VinSearchParams:
+      description: 'A search parameters for the search by vin.
+
+        It consists on VIN and Part Types or Keyword.
+
+
+        [Search](#tag/search) require VIN and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only VIN. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - vin
+      properties:
+        vin:
+          type: string
+          example: SomeVIN
+    PlateSearchParams:
+      description: 'A search parameters for the search by Plate.
+
+        It consists on Plate and Part Types or Keyword.
+
+
+        [Search](#tag/search) require Plate and one of another properties - Part Types or Keyword.
+
+
+        [Create Quote](#operation/createQuote) requires only Plate. Part Types or Keyword is optional.
+
+        '
+      type: object
+      minProperties: 1
+      maxProperties: 2
+      required:
+      - plate
+      properties:
+        plate:
+          type: object
+          required:
+          - state
+          - plate
+          properties:
+            state:
+              description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: \w{2,2}
+              example: MA
+            plate:
+              type: string
+              example: SomePlate
+    PartPrice:
+      type: object
+      required:
+      - cost
+      - core
+      - fet
+      properties:
+        list:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 1.2
+          description: Not all parts will have a list price. This property will contain the null value for parts without a list price.
+        price:
+          type: number
+          format: float
+          example: 1.6
+          description: Total price charged to the user for an item, includes discounts and core charge if applicable.
+        cost:
+          type: number
+          format: float
+          example: 1.24
+          description: Cost of an item for the user including any discounts. Excludes any core charges.
+        core:
+          type: number
+          format: float
+          example: 0.4
+          description: A fee for certain part types that is returned to the purchaser when the old part that is being replaced is returned to the store.
+        fet:
+          type:
+          - number
+          - 'null'
+          description: The Federal Excise Tax (FET) applies to tires used on the road with a maximum load capacity greater than 3500 pounds. This tax is charged to the purchaser of the tire from the tire supplier. Only 100% accurate FET values are sent through the PartsTech API.
+          format: float
+          example: 1.2
+        retail:
+          type:
+          - number
+          - 'null'
+          description: The price to charge customers. PartsTech calculates this price by taking the ``cost`` and then applying the appropriate mark up from the user's retail pricing configuration. This property will be null if there is no applicable mark up to the item or if the user has not set up their retail pricing configuration.
+          format: float
+          example: 2
+        discount:
+          type:
+          - number
+          - 'null'
+          description: The discount for an item. There can be a discount when an item is quoted or purchased as part of a bundled deal from participating suppliers.
+          format: float
+          example: 0.2
+        map:
+          type:
+          - number
+          - 'null'
+          description: Minimum Advertised Price
+          format: float
+          example: 1.9
+    VinSearchParamsByKeyword:
+      allOf:
+      - $ref: '#/components/schemas/VinSearchParams'
+      - $ref: '#/components/schemas/KeywordSearchParams'
+  responses:
     ForbiddenError:
       description: Forbidden. Also used for unauthorized requests such as improper credentials scopes or permissions issues.
       content:
@@ -1484,6 +1456,34 @@ components:
                 error:
                   code: IncorrectMode
                   message: Incorrect user for test mode
+    InvalidRequest:
+      description: Malformed request. The request body is not parse-able or with invalid content.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidRequestError'
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
+    locale:
+      name: locale
+      in: query
+      description: Locale, default en_US
+      schema:
+        type:
+        - string
+        - 'null'
+        enum:
+        - en_US
+        - es_MX
+      required: false
+      example: null
   securitySchemes:
     bearerAuth:
       type: http

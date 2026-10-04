@@ -284,66 +284,6 @@ paths:
                 $ref: '#/components/schemas/Store'
 components:
   schemas:
-    BriefSupplierWithCredentials:
-      allOf:
-      - $ref: '#/components/schemas/BriefSupplier'
-      - type: object
-        required:
-        - lockedStore
-        properties:
-          credentialsFormat:
-            $ref: '#/components/schemas/SupplierPreferenceCredentialsFormat'
-          lockedStore:
-            type: boolean
-            description: 'If true: It will try to assign itself a store to the supplier preference of a shop
-
-              '
-    BriefStore:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          example: 1
-          description: PartsTech's ID for a store.
-        name:
-          type: integer
-          example: 5904 - Springfield, MA
-          description: The name of a store
-    Store:
-      allOf:
-      - $ref: '#/components/schemas/BriefStore'
-      - type: object
-        required:
-        - address
-        - pickUp
-        - hotshot
-        - dropship
-        properties:
-          address:
-            $ref: '#/components/schemas/Address'
-          pickUp:
-            type: boolean
-            example: true
-          hotshot:
-            type: integer
-            example: 25
-          dropship:
-            type: boolean
-            example: true
-          distance:
-            type:
-            - integer
-            - 'null'
-            description: A distance to the selected address/zip or to the shipping address of an user
-          shippingMethods:
-            type: array
-            items:
-              $ref: '#/components/schemas/ShippingMethod'
-          supplier:
-            $ref: '#/components/schemas/BriefSupplierWithCredentials'
     BriefSupplier:
       type: object
       required:
@@ -358,45 +298,6 @@ components:
           type: string
           example: Advance Auto Parts
           description: The name of a supplier.
-    Address:
-      type: object
-      description: Address of the user's shop
-      required:
-      - address1
-      - city
-      - state
-      - zipCode
-      properties:
-        address1:
-          type: string
-          example: 1 Broadway
-        address2:
-          type:
-          - string
-          - 'null'
-          example: 14th Floor
-        city:
-          type: string
-          example: Cambridge
-        state:
-          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
-          type: string
-          minLength: 2
-          maxLength: 2
-          pattern: \w{2,2}
-          example: MA
-        zipCode:
-          type: string
-          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
-          example: '02142'
-        country:
-          description: ISO 3166-1 alpha-2
-          type: string
-          minLength: 2
-          maxLength: 2
-          pattern: \w{2,2}
-          default: US
-          example: US
     SupplierPreferenceCredentialsFormat:
       description: '**Note** that different suppliers have a different format of the credentials.
 
@@ -456,7 +357,114 @@ components:
       - USPS
       - UPS
       - FedEx
+    BriefStore:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: PartsTech's ID for a store.
+        name:
+          type: integer
+          example: 5904 - Springfield, MA
+          description: The name of a store
+    Store:
+      allOf:
+      - $ref: '#/components/schemas/BriefStore'
+      - type: object
+        required:
+        - address
+        - pickUp
+        - hotshot
+        - dropship
+        properties:
+          address:
+            $ref: '#/components/schemas/Address'
+          pickUp:
+            type: boolean
+            example: true
+          hotshot:
+            type: integer
+            example: 25
+          dropship:
+            type: boolean
+            example: true
+          distance:
+            type:
+            - integer
+            - 'null'
+            description: A distance to the selected address/zip or to the shipping address of an user
+          shippingMethods:
+            type: array
+            items:
+              $ref: '#/components/schemas/ShippingMethod'
+          supplier:
+            $ref: '#/components/schemas/BriefSupplierWithCredentials'
+    Address:
+      type: object
+      description: Address of the user's shop
+      required:
+      - address1
+      - city
+      - state
+      - zipCode
+      properties:
+        address1:
+          type: string
+          example: 1 Broadway
+        address2:
+          type:
+          - string
+          - 'null'
+          example: 14th Floor
+        city:
+          type: string
+          example: Cambridge
+        state:
+          description: 'ISO 3166-2: Second part. Example for US-MA - MA.'
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          example: MA
+        zipCode:
+          type: string
+          pattern: (^\d{5}$)|(^\d{5}-\d{4}$)
+          example: '02142'
+        country:
+          description: ISO 3166-1 alpha-2
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: \w{2,2}
+          default: US
+          example: US
+    BriefSupplierWithCredentials:
+      allOf:
+      - $ref: '#/components/schemas/BriefSupplier'
+      - type: object
+        required:
+        - lockedStore
+        properties:
+          credentialsFormat:
+            $ref: '#/components/schemas/SupplierPreferenceCredentialsFormat'
+          lockedStore:
+            type: boolean
+            description: 'If true: It will try to assign itself a store to the supplier preference of a shop
+
+              '
   parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
+      example: 2
     perPage:
       name: perPage
       in: query
@@ -470,14 +478,6 @@ components:
       x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
       example: 50
       description: 'Records per request. Default: 50'
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      x-serializer-class: com.partstech.partnerapi.serialization.NullableInt
-      example: 2
   securitySchemes:
     bearerAuth:
       type: http

@@ -1,0 +1,12 @@
+{
+ "url": "https://api.partstech.com/openapi.yaml",
+ "requested_url": "https://api.partstech.com/openapi.yaml",
+ "status": 200,
+ "content_type": "application/yaml",
+ "bytes": 413403,
+ "sha256": "127f5a13627e2812253e1c4c38e48b8ab4ca73b520613242d0808216fc4069c7",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 1.0), but the bytes differ, so the archive is an earlier or reformatted copy."
+}

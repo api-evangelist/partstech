@@ -80,3 +80,32 @@ api_pricing:
     No public price, quota or metered rate is published for the External API. Rate limits are published
     in the OpenAPI description (see rate-limits/partstech-rate-limits.yml) but the commercial terms are
     not.
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - subscription
+  units: []
+  plans:
+  - name: PartsTech Free
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: PartsTech Plus
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: PartsTech Complete
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods:
+    - month

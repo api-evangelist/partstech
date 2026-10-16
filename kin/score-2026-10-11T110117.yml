@@ -1,21 +1,19 @@
-# Kin Score artifact — partstech — 2026-09-05T211839
+# Kin Score artifact — partstech — 2026-10-11T110117
 # The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
 ---
 kin_score:
   slug: partstech
-  schema_version: 0.18.3
-  scored_at: '2026-09-05'
-  run_ts: 2026-09-05T211839
-  composite: 51.6
+  schema_version: 0.23.0
+  scored_at: '2026-10-11'
+  run_ts: 2026-10-11T110117
+  composite: 52.5
   band: developing
   facets:
-    discoverability: 50.0
-    contract_quality: 61.3
-    governance: 4.5
+    discoverability: 66.1
+    contract_quality: 56.0
+    contract_governance: 4.5
     operational_transparency: 42.1
     developer_ergonomics: 56.5
-    commercial_clarity: 69.7
-    contract_governance: 4.5
     access_clarity: 69.7
   agent_readiness:
     score: 30.8
@@ -40,6 +38,12 @@ kin_score:
       protected_resource_metadata: false
       dynamic_client_registration: false
       agentic_commerce: false
+  regulatory:
+    applies: true
+    regime: Horizontal (data, software, accessibility, platform)
+    regime_id: horizontal
+    score: 24.5
+    matched_via: fallback
   provenance:
     mcp: derived
     skills: derived
